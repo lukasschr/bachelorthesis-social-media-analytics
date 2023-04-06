@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 jupyter = "*"
+snscrape = "*"
+matplotlib = "*"
+pandas = "*"
 
 [dev-packages]
 
