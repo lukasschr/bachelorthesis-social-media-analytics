@@ -8,6 +8,7 @@ jupyter = "*"
 snscrape = "*"
 matplotlib = "*"
 pandas = "*"
+tqdm = "*"
 
 [dev-packages]
 
