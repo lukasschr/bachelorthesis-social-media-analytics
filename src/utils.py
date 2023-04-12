@@ -1,5 +1,14 @@
+from email.message import EmailMessage
 import pickle
 import os
+import ssl
+import smtplib
+import platform
+
+
+class UnrecognizedOperatingSystem(Exception):
+    """Raises when the current operating system cannot be identified"""
+
 
 def safe_as_pkl(obj, filename:str, path:str):
     """Serial object.
@@ -50,3 +59,42 @@ def load_pkl(path):
                 break
             objs.append(obj)
     return objs
+
+
+def send_notification(sender=os.environ.get('GMAIL_MAIL'), 
+                      receiver=os.environ.get('DEFAULT_RECEIVER_MAIL'),
+                      g_app_pass=os.environ.get('G_APP_PASS')):
+    """Sends a notification via email.
+    
+    Sends a very simple email to a recipient account via a Gmail account. 
+    Note: The sender,receiver and g_app_pass variables can be previously set in an .env file.
+    Otherwise the variables must be overwritten.
+
+    Args:
+        sender: email address of the Google account
+        receiver: email address of the receiver
+        g_app_pass: 16 digit google app password
+    """
+    mail = EmailMessage()
+    mail['From'] = sender
+    mail['To'] = receiver
+    mail['Subject'] = 'Script executed successfully!'
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context()) as smtp:
+        smtp.login(sender, g_app_pass)
+        smtp.sendmail(sender, receiver, mail.as_string())
+
+
+def shutdown():
+    """Shuts down the system.
+
+    If a code runs for a long time, this function can be used to automatically shut down the system 
+    after successful execution.
+    WARNING: This function can only be used if the code is run with admin rights
+    """
+    operating_system = platform.system()
+    if operating_system == 'Windows':
+        os.system('shutdown /s /t 0')
+    elif operating_system == 'Linux' or operating_system == 'Darwin':
+        os.system('sudo shutdown now')
+    else:
+        raise UnrecognizedOperatingSystem
