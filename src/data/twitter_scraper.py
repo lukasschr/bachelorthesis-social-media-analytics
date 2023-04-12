@@ -9,7 +9,6 @@ import snscrape.modules.twitter as sntwitter
 
 class IncorrectNumberOfPostsCollected(Exception):
     """Raises if either too many posts have been collected or posts are missing."""
-    pass
 
 
 def get_twitter_posts(query:str, limit:int=500_000):
@@ -96,9 +95,17 @@ if __name__ == '__main__':
                                     epilog='Made with <3 by Lukas Schroeder')
     parser.add_argument('query')
     parser.add_argument('-l', '--limit', help='number of tweets to collect')
+    parser.add_argument('-s', '--shutdown', help='shuts down the system after successful execution',
+                        action='store_true')
     args = parser.parse_args()
 
     if args.limit:
         get_twitter_posts(query=args.query, limit=int(args.limit))
+        if args.shutdown:
+            utils.send_notification()
+            utils.shutdown()
     else:
         get_twitter_posts(query=args.query)
+        if args.shutdown:
+            utils.send_notification()
+            utils.shutdown()
