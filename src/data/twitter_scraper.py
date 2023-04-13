@@ -84,13 +84,13 @@ def get_twitter_posts(query:str, limit:int=500_000):
     else:
         raise IncorrectNumberOfPostsCollected
     
-    utils.safe_as_pkl(obj=list_of_tweets, filename='twitter_tweets_raw', path='../data/raw')
+    utils.safe_as_pkl(obj=list_of_tweets, filename='twitter_tweets_raw', path=os.path.join(PROJECT_ROOT, 'data', 'raw'))
     return list_of_tweets
 
 
 if __name__ == '__main__':
     # setup cli with argparse
-    os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     parser = argparse.ArgumentParser(description='Collects Twitter posts for the given quary.', 
                                     epilog='Made with <3 by Lukas Schroeder')
     parser.add_argument('query')
