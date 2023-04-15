@@ -1,5 +1,7 @@
-notebooks/.ipynb_checkpoints/
 .vscode
 .cache
+.rclone
+data
+notebooks/.ipynb_checkpoints/
 .env
 src.egg-info
