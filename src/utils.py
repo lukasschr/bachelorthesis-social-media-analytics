@@ -3,12 +3,6 @@ import pickle
 import os
 import ssl
 import smtplib
-import platform
-
-
-class UnrecognizedOperatingSystem(Exception):
-    """Raises when the current operating system cannot be identified"""
-
 
 def safe_as_pkl(obj, filename:str, path:str):
     """Serial object.
@@ -91,10 +85,8 @@ def shutdown():
     after successful execution.
     WARNING: This function can only be used if the code is run with admin rights
     """
-    operating_system = platform.system()
+    operating_system = os.environ.get('OS')
     if operating_system == 'Windows':
         os.system('shutdown /s /t 0')
-    elif operating_system == 'Linux' or operating_system == 'Darwin':
-        os.system('sudo shutdown now')
     else:
-        raise UnrecognizedOperatingSystem
+        os.system('sudo shutdown now')
