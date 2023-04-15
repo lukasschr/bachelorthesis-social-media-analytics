@@ -52,6 +52,8 @@ def install_rclone(url, executable):
     shutil.rmtree(f'.rclone/{os.path.dirname(path_to_executable)}')
     os.remove('.rclone/rclone.zip')
     # create configurations file for rclone
+    if operating_system == 'Linux':
+        subprocess.run(['chmod', '+x', f'.rclone/{executable}'], check=True)
     subprocess.run([f'.rclone/{executable}', '--config', '.rclone/rclone.conf', 'config', 'create', 'git_dbx_lfs', 'dropbox', 
                     f"client_id={os.environ.get('CLIENT_ID')}", f"client_secret={os.environ.get('CLIENT_SECRET')}"], check=True)
 
