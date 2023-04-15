@@ -9,6 +9,7 @@ snscrape = "*"
 matplotlib = "*"
 pandas = "*"
 tqdm = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
