@@ -10,6 +10,9 @@ matplotlib = "*"
 pandas = "*"
 tqdm = "*"
 python-dotenv = "*"
+nltk = "*"
+contractions = "*"
+emoji = "*"
 
 [dev-packages]
 
