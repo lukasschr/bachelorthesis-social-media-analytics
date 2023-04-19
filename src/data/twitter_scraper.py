@@ -5,6 +5,7 @@ import os
 from src import utils
 from tqdm import tqdm
 import snscrape.modules.twitter as sntwitter
+import pandas as pd
 
 
 class IncorrectNumberOfPostsCollected(Exception):
@@ -84,8 +85,14 @@ def get_twitter_posts(query:str, limit:int=500_000):
     else:
         raise IncorrectNumberOfPostsCollected
     
-    utils.safe_as_pkl(obj=list_of_tweets, filename='twitter_tweets_raw', path=os.path.join(PROJECT_ROOT, 'data', 'raw'))
-    return list_of_tweets
+    # transform posts into a dataframe
+    df = pd.DataFrame(list_of_tweets)
+
+    # export dataframe
+    utils.safe_as_pkl(obj=df, filename='twitter_tweets_raw', path=os.path.join(PROJECT_ROOT, 'data', 'raw'))
+    df.to_csv(f"{os.path.join(PROJECT_ROOT, 'data', 'raw')}/twitter_tweets_raw.csv", index=False)
+
+    return df
 
 
 if __name__ == '__main__':
