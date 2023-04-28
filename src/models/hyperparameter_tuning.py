@@ -111,7 +111,7 @@ class GridSearch():
         num_topics = num_topics
         alpha = self._assign_correct_types(alpha)
         eta = self._assign_correct_types(eta)
-        passes = passes
+        passes = self._assign_correct_types(passes)
 
         self.hyperparameters = list(itertools.product(num_topics, alpha, eta, passes))
         
