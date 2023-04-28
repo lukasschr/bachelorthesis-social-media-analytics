@@ -1,7 +1,6 @@
 import time
 
 from gensim import corpora, models
-import pandas as pd
 
 
 class Model():
@@ -69,11 +68,3 @@ class Model():
          coherence_score = coherence_model_lda.get_coherence()
          # todo: more metrics ...
          return coherence_score
-
-
-if __name__ == '__main__':
-    df = pd.read_feather(path='../../data/processed/twitter_tweets_processed.feather')
-    m = Model(text=df['preprocessed_text'], multicore=2)
-    lda_model, dictionary, seed, calculation_time = m.build(num_topics=10, alpha=0.1, eta=0.1, passes=1)
-    cs = m.evaluate(model=lda_model, text=df['preprocessed_text'], dictionary=dictionary)
-    print(cs)
