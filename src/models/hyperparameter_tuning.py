@@ -159,9 +159,12 @@ class GridSearch():
         _ = []
         for element in lst:
             try:
-                _.append(float(element))
+                _.append(int(element))
             except ValueError:
-                _.append(element)
+                    try:
+                        _.append(float(element))
+                    except ValueError:
+                        _.append(element)
         return _
 
 
