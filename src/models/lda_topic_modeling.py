@@ -60,7 +60,6 @@ class Model():
             model: LDA Model
             text: the text used to create the model
             dictionary: the dictionary used to create the model
-
          """
          # calculate coherence score
          coherence_model_lda = models.coherencemodel.CoherenceModel(model=model, texts=text, 

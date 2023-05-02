@@ -25,11 +25,15 @@ class RandomSearch():
     a first feel for the composition. A finer search should then be carried out with GridSearch algorithm.
 
     Attributes:
+        processed_df: Path to the processed .FEATHER file, which contains the preprocessed text in column 
+                      'preprocessed_text'
         limit: Indicates whether only a certain number of combinations should be executed - 
                otherwise the code runs endlessly.
     """
-    def __init__(self, limit=False):
+    def __init__(self, processed_df, limit=False):
         self.limit = limit
+        logging.info('  ~  load dataset ...')
+        self.processed_df = pd.read_feather(path=processed_df)
         self.df = pd.DataFrame(columns=['random_state', 'num_topics', 'alpha', 'eta', 'passes', 
                                         'calculation_time', 'coherence_score'])
         
@@ -62,10 +66,10 @@ class RandomSearch():
             eta = random_hyperparameter_choice[2]
             passes = random_hyperparameter_choice[3]
 
-            topic_modeling = lda_topic_modeling.Model(text=DF['preprocessed_text'], multicore=cores)
+            topic_modeling = lda_topic_modeling.Model(text=self.processed_df['preprocessed_text'], multicore=cores)
             lda_model, dictionary, seed, calculation_time = topic_modeling.build(num_topics=num_topics, alpha=alpha, 
                                                                                  eta=eta, passes=passes)
-            cs = topic_modeling.evaluate(model=lda_model, text=DF['preprocessed_text'], dictionary=dictionary)
+            cs = topic_modeling.evaluate(model=lda_model, text=self.processed_df['preprocessed_text'], dictionary=dictionary)
             
             result = {
                 'random_state': seed,
@@ -78,7 +82,7 @@ class RandomSearch():
             }
 
             self.df.loc[len(self.df)] = result
-            self.df.to_feather(f"{os.path.join(PROJECT_ROOT, 'models')}/hyperparameter_tuning_results<_randomsearch.feather")
+            self.df.to_feather(f"{os.path.join(PROJECT_ROOT, 'models')}/hyperparameter_tuning_results_randomsearch.feather")
             
             avg_calculation_time = self.df['calculation_time'].mean()
             logging.info(f"""  ~  Done. Model {iteration} calculated successfully! Calculation time: {round(calculation_time, 4)} minutes; average calculation time: {round(avg_calculation_time, 4)}\n""")
@@ -99,19 +103,23 @@ class GridSearch():
     use the RandomSearch algorithm.
     
     Attributes:
+        processed_df: Path to the processed .FEATHER file, which contains the preprocessed text in column 
+                      'preprocessed_text'
         num_topics: a list of all possible numbers for the topic count
         alpha: a list of all possible values for the alpha value
         eta: a list of all possible values for the eta value
         passes: a list of all possible numbers for the passes value
     """
-    def __init__(self, num_topics:list, alpha:list, eta:list, passes:list=[5]):
+    def __init__(self, processed_df, num_topics:list, alpha:list, eta:list, passes:list=[5]):
+        logging.info('  ~  load dataset ...')
+        self.processed_df = pd.read_feather(path=processed_df)
         self.df = pd.DataFrame(columns=['random_state', 'num_topics', 'alpha', 'eta', 'passes', 
                                         'calculation_time', 'coherence_score'])
         
         num_topics = num_topics
         alpha = self._assign_correct_types(alpha)
         eta = self._assign_correct_types(eta)
-        passes = self._assign_correct_types(passes)
+        passes = passes
 
         self.hyperparameters = list(itertools.product(num_topics, alpha, eta, passes))
         
@@ -132,10 +140,10 @@ class GridSearch():
             eta = hyperparameter_combination[2]
             passes = hyperparameter_combination[3]
             
-            topic_modeling = lda_topic_modeling.Model(text=DF['preprocessed_text'], multicore=cores)
+            topic_modeling = lda_topic_modeling.Model(text=self.processed_df['preprocessed_text'], multicore=cores)
             lda_model, dictionary, seed, calculation_time = topic_modeling.build(num_topics=int(num_topics), alpha=alpha, 
-                                                                                 eta=eta, passes=passes)
-            cs = topic_modeling.evaluate(model=lda_model, text=DF['preprocessed_text'], dictionary=dictionary)
+                                                                                 eta=eta, passes=int(passes))
+            cs = topic_modeling.evaluate(model=lda_model, text=self.processed_df['preprocessed_text'], dictionary=dictionary)
             
             result = {
                 'random_state': seed,
@@ -190,13 +198,9 @@ if __name__ == '__main__':
         parser.add_argument('--eta', nargs='+', help='a list of all possible values for the eta value')
         parser.add_argument('--passes', nargs='*', help='a list of all possible numbers for the passes value')
     args = parser.parse_args()
-    
-    # load dataframe
-    logging.info('  ~  load dataset ...')
-    DF = pd.read_feather(path=args.path)
 
     if args.method == 'randomsearch':
-        rs = RandomSearch()
+        rs = RandomSearch(processed_df=args.path)
         logging.warning('  ~  start random_search algorithm')
         rs.search(cores=CORES) # cores = 0 for simple LDA calculation
     elif args.method == 'gridsearch':
@@ -207,9 +211,9 @@ if __name__ == '__main__':
         q = input(f'\nPlease check your entries:\n   num_topics: {num_topics}\n   alpha: {alpha}\n   eta: {eta}\n   passes: {passes}\nAre your entries correct? (y/n): ')
         if q.lower() == 'y':
             if args.passes:
-                gs = GridSearch(num_topics=num_topics, alpha=alpha, eta=eta, passes=passes)
+                gs = GridSearch(processed_df=args.path, num_topics=num_topics, alpha=alpha, eta=eta, passes=passes)
             else:
-                gs = GridSearch(num_topics=num_topics, alpha=alpha, eta=eta)
+                gs = GridSearch(processed_df=args.path, num_topics=num_topics, alpha=alpha, eta=eta)
             print('')
             logging.warning('  ~  start grid_search algorithm')
             gs.search(cores=CORES, server_execution=True) # cores = 0 for simple LDA calculation
