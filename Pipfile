@@ -18,6 +18,7 @@ gensim = "*"
 pyldavis = "*"
 numpy = "*"
 paramiko = "*"
+praw = "*"
 
 [dev-packages]
 
