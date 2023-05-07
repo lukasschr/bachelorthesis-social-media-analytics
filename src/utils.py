@@ -18,7 +18,7 @@ def safe_as_pkl(obj, filename:str, path:str):
         pickle.dump(obj, f)
 
 
-def cache(obj, caching_token:str):
+def cache(project_root_directory, obj, caching_token:str):
     """Serial multiple objects.
 
     Opens a .pkl file and appends the given object
@@ -27,9 +27,9 @@ def cache(obj, caching_token:str):
         obj: the object to be serailized and appended
         caching_token: path of the .pkl file
     """
-    if not os.path.exists('../.cache'):
-        os.mkdir('../.cache')
-    with open(f'../.cache/{caching_token}.pkl', 'ab') as f:
+    if not os.path.exists(f'{project_root_directory}/.cache'):
+        os.mkdir(f'{project_root_directory}/.cache')
+    with open(f'{project_root_directory}/.cache/{caching_token}.pkl', 'ab') as f:
         pickle.dump(obj, f)
 
 
