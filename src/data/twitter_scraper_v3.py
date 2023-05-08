@@ -1,3 +1,5 @@
+# Author: Lukas Schröder 
+# Version: 0.1
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -68,7 +70,7 @@ def query(q:str, since:datetime.datetime, until:datetime.datetime, limit:int):
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-GOAL = 100_000
+GOAL = 500_000
 
 after = datetime.datetime(2023, 1, 1)
 before = datetime.datetime(2023, 3, 31)
