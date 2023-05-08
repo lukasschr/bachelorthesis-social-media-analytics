@@ -19,6 +19,8 @@ pyldavis = "*"
 numpy = "*"
 paramiko = "*"
 praw = "*"
+beautifulsoup4 = "*"
+selenium = "*"
 
 [dev-packages]
 
