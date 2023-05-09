@@ -101,15 +101,15 @@ class TweetScraper(Scraper):
 
             posts_to_be_collected_per_day = kwargs['limit'] // ((until - since).days)
 
-            iteration_date = since
-            while iteration_date < until:
+            iteration_date = until
+            while iteration_date > since:
                 self.search(
                     q=kwargs['q'], 
-                    since=iteration_date, 
-                    until=iteration_date + datetime.timedelta(days=1),
+                    since=iteration_date - datetime.timedelta(days=1), 
+                    until=iteration_date,
                     limit=posts_to_be_collected_per_day
                     )
-                iteration_date += datetime.timedelta(days=1)
+                iteration_date -= datetime.timedelta(days=1)
 
 
 class UserScraper(Scraper):
