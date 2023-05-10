@@ -89,14 +89,14 @@ class TweetScraper(Scraper):
         search_url = f'{self._base_url}&q={q}&since={_since}&until={_until}&near='
         
         try:
-            driver = webdriver.Chrome() # Firefox
+            driver = webdriver.Firefox()
         except:
             try:
                 driver.quit()
             except:
                 pass
             time.sleep(10)
-            driver = webdriver.Chrome() # Firefox
+            driver = webdriver.Firefox()
         driver.get(search_url)
 
         number_of_collected_tweets = 0
