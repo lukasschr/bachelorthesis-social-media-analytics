@@ -18,9 +18,9 @@ gensim = "*"
 pyldavis = "*"
 numpy = "*"
 paramiko = "*"
-praw = "*"
 beautifulsoup4 = "*"
 selenium = "*"
+langdetect = "*"
 
 [dev-packages]
 
