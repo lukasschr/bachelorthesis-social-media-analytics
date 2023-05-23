@@ -1,117 +1,93 @@
-import argparse
-import logging
-import os
+import datetime
 
-from src import utils
+from langdetect import detect
+from tqdm import tqdm
 import pandas as pd
 
+from src.data.nitter_scraper_standalone_v2 import Tweet, TweetScraper
+from src.utils import Logger
 
-PERIOD_OF_COLLECTED_POSTS_START='2023-01-01'
-PERIOD_OF_COLLECTED_POSTS_END='2023-03-31'
-
-
-def _creation_date_in_period(raw_df):
-    _ = raw_df.copy()
-    _['date'] = pd.to_datetime(_.date).dt.tz_localize(None)
-    if _.query(
-        f'date < "{str(PERIOD_OF_COLLECTED_POSTS_START)}" or date > "{str(PERIOD_OF_COLLECTED_POSTS_END)}"').empty:
-        return True
-    else:
-        return False
-
-def _text_without_null_values(raw_df):
-    if raw_df['rawContent'].isnull().any():
-        return False
-    else:
-        return True
-
-def _no_duplicates(raw_df):
-    if raw_df['rawContent'].duplicated().any():
-        return False
-    else:
-        return True
-
-def _all_texts_in_english(raw_df):
-    if raw_df['lang'].eq('en').all():
-        return True
-    else:
-        return False
+logger = Logger().logger
 
 
-def clean(raw_df):
-    """Cleans a RAW Dataframe.
+class CleaningPipeline:
+    def __init__(self, path) -> None:
+        logger.info('initialize pipeline and load & transform list of tweets in raw dataframe...')
+        self.df = self._get_raw_df(path=path)
+
+    def run(self):
+        logger.warning('starting data cleaning...')
+        logger.info('formating date...')
+        self.df['date'] = self.df['date'].apply(lambda x: datetime.datetime.strptime(x, "%b %d, %Y · %I:%M %p %Z"))
+
+        if not self._text_without_null_values():
+            logger.warning('entries without text data were found!')
+            logger.info('clean _text_without_null_values...')
+            self.df.dropna(subset=['rawContent'], inplace=True)
+        
+        if not self._creation_date_in_period():
+            logger.warning('entries that were created outside of the specified period were found!')
+            logger.info('clean _creation_date_in_period...')
+            posts_not_in_period = self.df.query('date < "2022-10-01" or date > "2023-03-31"')
+            self.df.drop(index=posts_not_in_period.index, inplace=True)
+
+        if not self._no_duplicates():
+            logger.warning('duplicate entries were found!')
+            logger.info('clean _no_duplicates...')
+            self.df.drop_duplicates(subset=['rawContent'], inplace=True)
+
+        if not self._all_texts_in_english():
+            logger.warning('entries which are not in english were found!')
+            logger.info('clean _all_texts_in_english...')
+            non_english_posts = self.df.query('lang != "en"')
+            self.df.drop(index=non_english_posts.index, inplace=True)
+
+        self.df.drop(columns=['lang'], inplace=True)
+        self.df.set_index('url', inplace=True)
+        self.df.reset_index(inplace=True)
+        logger.info('data cleaning completed successfully!')
+        return self.df
     
-    Checks whether the dataframe meets the requirements and cleans up errors.
 
-    Args:
-        raw_df: pandas Dataframe in RAW state (as it results from twitter_scraper.py)
-    
-    Returns:
-        Cleaned pandas dataframe
-    """
-    logging.warning('Start cleaning process...')
-    if not _text_without_null_values(raw_df):
-        logging.warning('There are entries without text data! ~ clean...')
-        raw_df.dropna(subset=['rawContent'], inplace=True)
-    
-    if not _creation_date_in_period(raw_df):
-        logging.warning('There are entries that were created outside of the specified period! ~ clean...')
-        posts_not_in_period = raw_df.query(
-            f'date < "{str(PERIOD_OF_COLLECTED_POSTS_START)}" or date > "{str(PERIOD_OF_COLLECTED_POSTS_END)}"')
-        raw_df.drop(index=posts_not_in_period.index, inplace=True)
-
-    if not _all_texts_in_english(raw_df):
-        logging.warning('There are entries which are not in English! ~ clean...')
-        non_english_posts = raw_df.query('lang != "en"')
-        raw_df.drop(index=non_english_posts.index, inplace=True)
-
-    if not _no_duplicates(raw_df):
-        logging.warning('There are duplicate text entries! ~ clean...')
-        raw_df.drop_duplicates(subset=['rawContent'], inplace=True)
-
-    # format date
-    logging.info('Format date')
-    raw_df['date'] = pd.to_datetime(raw_df['date']).dt.tz_localize(None)
-
-    # delete irrelevant columns
-    logging.info('Delete irrelevant columns')
-    raw_df.drop(columns=['renderedContent', 'id', 'user', 'replyCount', 'retweetCount', 'likeCount', 
-                     'quoteCount', 'conversationId', 'lang', 'source', 'sourceUrl', 'sourceLabel', 
-                     'links', 'media', 'retweetedTweet', 'quotedTweet', 'inReplyToTweetId', 'inReplyToUser', 
-                     'mentionedUsers', 'coordinates', 'place', 'hashtags', 'cashtags', 'card', 'viewCount', 
-                     'vibe'], inplace=True)
-    
-    raw_df.set_index('url', inplace=True)
-    raw_df.reset_index(inplace=True)
-    logging.info('Cleaning process complete!')
-    return raw_df
+    def _text_without_null_values(self):
+        if self.df['rawContent'].isnull().any():
+            return False
+        else:
+            return True
+        
+    def _creation_date_in_period(self):
+        if self.df.query('date < "2022-10-01" or date > "2023-03-31"').empty:
+            return True
+        else:
+            return False
+        
+    def _no_duplicates(self):
+        if self.df['rawContent'].duplicated().any():
+            return False
+        else:
+            return True
+        
+    def _all_texts_in_english(self):
+        def _detect_language():
+            logger.warning('determine language for each entry...')
+            def __detect_language(text):
+                try:
+                    lang = detect(text)
+                except:
+                    lang = None
+                return lang
+            tqdm.pandas()
+            # determine the language for each tweet
+            self.df['lang'] = self.df['rawContent'].progress_apply(__detect_language)
+        
+        _detect_language()
+        if self.df['lang'].eq('en').all():
+            return True 
+        else:
+            return False
 
 
-if __name__ == '__main__':
-    # setup logging
-    logging.basicConfig(
-        format='%(levelname)s %(message)s',
-        level=logging.INFO
-    )
-
-    # setup cli with argparse
-    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    parser = argparse.ArgumentParser(description='Cleans a pandas dataframe.', 
-                                    epilog='Made with <3 by Lukas Schroeder')
-    parser.add_argument('path', help='Path to a .PKL file containing a pandas dataframe')
-    parser.add_argument('-sd', '--startdate', help='PERIOD_OF_COLLECTED_POSTS_START')
-    parser.add_argument('-ed', '--enddate', help='PERIOD_OF_COLLECTED_POSTS_END')
-    args = parser.parse_args()
-
-    if args.startdate:
-        PERIOD_OF_COLLECTED_POSTS_START=args.startdate
-    if args.enddate:
-        PERIOD_OF_COLLECTED_POSTS_END=args.enddate
-
-    # load raw dataframe
-    logging.info('Load dataset...')
-    raw_df = utils.load_pkl(path=args.path)[0]
-    
-    cleaned_df = clean(raw_df=raw_df)
-    cleaned_df.to_feather(
-        f"{os.path.join(PROJECT_ROOT, 'data', 'intermediate')}/twitter_tweets_intermediate.feather")
+    def _get_raw_df(self, path):
+        list_of_tweets = TweetScraper.load_collected_tweets(path=path)
+        dict_of_tweets =  [{"url": tweet.url, "date": tweet.date, "rawContent": tweet.rawContent} for tweet in list_of_tweets]
+        return pd.DataFrame(dict_of_tweets)

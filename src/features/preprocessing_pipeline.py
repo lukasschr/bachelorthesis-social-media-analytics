@@ -1,7 +1,3 @@
-import logging
-import argparse
-import os
-
 import pandas as pd
 import contractions
 import nltk
@@ -11,240 +7,159 @@ import re
 
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import WordPunctTokenizer
 
-# download required nltk packages
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
+from tqdm import tqdm
+from src.utils import Logger
+
+logger = Logger().logger
 
 
-def tokenize(dataframe, c):
-    """Converts text/strings to tokens.
+class PreprocessingPipeline:
+    """A superclass for preprocessing pipeline classes.
 
-    Converts any text in any column of a dataframe to 1-gram tokens.
+    Defines important methods and techniques to preprocess text for modeling.
 
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
+    Attributes:
+        dataframe: A pandas dataframe; The text to be processed must be in the 'rawContent' column.
     """
-    tokenize = nltk.tokenize.word_tokenize
-    if c == '':
-        dataframe[f'{c}_tokenized'] = dataframe['rawContent'].apply(tokenize)
-    else:
-        dataframe[f'{c}_tokenized'] = dataframe[c].apply(tokenize)
-    try:
-        del df[c]
-    except KeyError:
-        pass
-    return dataframe, f'{c}_tokenized'
+    def __init__(self, dataframe:pd.DataFrame) -> None:
+        logger.info('initialize pipeline and download required nltk packages...')
+        # download required nltk packages
+        nltk.download('punkt')
+        nltk.download('stopwords')
+        nltk.download('wordnet')
+        self.__dataframe = dataframe
+        self.__dataframe['preprocessed_text'] = self.__dataframe['rawContent'].copy()
+        tqdm.pandas()
 
-def lowercase(dataframe, c):
-    """Lowercase each token.
+    def remove_urls(self):
+        """Removes URLs from the text."""
+        logger.info('remove urls...')
+        def _remove_urls(text):
+            # define regex pattern for url detection
+            url_pattern = re.compile(r'\b(?:https?://)?(?:[a-z]+\.[a-z]+\.[a-z]+|[a-z]+\.[a-z]+(?:/[^\s]*)?)\b')
+            # remove url matches from the text
+            text_without_urls = re.sub(url_pattern, '', text)
+            return text_without_urls
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_urls)
 
-    Lowercase the tokens for each token list in the dataframe.
-    WARNING: tokenization must have been carried out beforehand!
+    def remove_mentions(self):
+        """Removes mentions of other Twitter users from the text."""
+        logger.info('remove twitter user mentions...')
+        def _remove_mentions(text):
+            # define regex pattern for user mentions
+            mention_pattern = re.compile(r'@\w+')
+            # remove user mentions from the text
+            text_without_mentions = re.sub(mention_pattern, '', text)
+            return text_without_mentions
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_mentions)
 
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
+    def fix_contractions(self):
+        """Repairs english language contractions."""
+        logger.info('fix contractions...')
+        def _fix_contractions(text):
+            try:
+                return contractions.fix(text)
+            except IndexError: # error should not appear
+                return text
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_fix_contractions)
+
+    def tokenize_text(self):
+        """Performs a tokenization of the texts."""
+        logger.info('tokenize text...')
+        # define tokenizer function
+        tokenizer = WordPunctTokenizer()
+        def _tokenize_text(text):
+            return tokenizer.tokenize(text)
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_tokenize_text)
+
+    def lowercase(self):
+        """Performs a lowercasing of the tokens."""
+        logger.info('lowercase tokens...')
+        def _lowercase(tokens):
+            return [token.lower() for token in tokens]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_lowercase)
+
+    def remove_punct(self):
+        """Removes punctuation within token lists."""
+        logger.info('remove punctuation...')
+        # adding more characters to the punctuation list
+        punct = string.punctuation + "’" + "``" +"`" + "''" +"'" + "•" + "“" + "”" + "…" + "�" + "‘" + "…" + "/…" + "-…" + "-#" + "’" + "..."
+        def _remove_punct(tokens):
+            return [token for token in tokens if token not in punct]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_punct)
+
+    def remove_numerics(self):
+        """Removes numeric values within token lists."""
+        logger.info('remove numeric values...')
+        def _remove_numerics(tokens):
+            return [token for token in tokens if not token.isdigit()]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_numerics)
+
+    def remove_stopwords(self):
+        """Removes all stop words within token lists."""
+        logger.info('remove stopwords...')
+        # define list of stopwords
+        stop_words = stopwords.words('english')
+        def _remove_stopwords(tokens):
+            return [token for token in tokens if token not in stop_words and len(token) > 1]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_stopwords)
     
-    Returns:
-        updated dataframe and column name to which function was applied
+    def remove_emoji(self):
+        """Removes all emojis within the token lists"""
+        logger.info('remove emojis...')
+        def _remove_emoji(tokens):
+            return [token for token in tokens if not any(char in emoji.EMOJI_DATA for char in token)]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_emoji)
+
+    def lemmatize(self):
+        """Performs a lemmatization of the tokens"""
+        logger.info('lemmatize tokens...')
+        # initialization of the lemmatizer
+        lemmatizer = WordNetLemmatizer()
+        def _lemmatize(tokens):
+            return [lemmatizer.lemmatize(token) for token in tokens]
+        self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_lemmatize)
+    
+    def __get_dataframe(self):
+        return self.__dataframe
+    
+    def __set_dataframe(self, dataframe:pd.DataFrame):
+        self.__dataframe = dataframe
+
+    dataframe = property(__get_dataframe, __set_dataframe)
+
+
+class DefaultPipeline(PreprocessingPipeline):
+    """The default preprocessing pipeline.
+
+    Contains the run method, which executes the standard preprocessing pipeline
+
+    Attributes:
+        dataframe: A pandas dataframe; The text to be processed must be in the 'rawContent' column.
     """
-    def _lowercase(tokens):
-        return [token.lower() for token in tokens]
-    dataframe[f'{c}_lowercase'] = dataframe[c].apply(_lowercase)
-    del df[c]
-    return dataframe, f'{c}_lowercase'
-
-def remove_punct(dataframe, c):
-    """Removes puncture.
-
-    Removes puncture for each token list in the dataframe.
-    WARNING: tokenization must have been carried out beforehand!
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
+    def __init__(self, dataframe:pd.DataFrame) -> None:
+        super().__init__(dataframe)
     
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    punct = string.punctuation + "’" + "``" +"`" + "''" +"'"
-    def _remove_punct(tokens):
-        return [token for token in tokens if token not in punct]
-    dataframe[f'{c}_nonpunctation'] = dataframe[c].apply(_remove_punct)
-    del df[c]
-    return dataframe, f'{c}_nonpunctation'
+    def run(self):
+        """Runs the preprocessing pipeline.
 
-def fix_contractions(dataframe, c):
-    """Converts English short forms to long forms.
-
-    Converts English short forms to long forms for any text in the dataframe.
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    def _fix_contractions(text):
-        return contractions.fix(text)
-    if c == '':
-        dataframe[f'{c}_fixedcontractions'] = dataframe['rawContent'].apply(_fix_contractions)
-    else:
-        dataframe[f'{c}_fixedcontractions'] = dataframe[c].apply(_fix_contractions)
-    try:
-        del df[c]
-    except KeyError:
-        pass
-    return dataframe, f'{c}_fixedcontractions'
-
-def remove_stopwords(dataframe, c):
-    """Removes stopwords.
-
-    Removes stopwords for each token list in the dataframe.
-    WARNING: tokenization must have been carried out beforehand!
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    stop_words = stopwords.words('english')
-    def _remove_stopwords(tokens):
-        return [token for token in tokens if token not in stop_words]
-    dataframe[f'{c}_nonstopwords'] = dataframe[c].apply(_remove_stopwords)
-    del df[c]
-    return dataframe, f'{c}_nonstopwords'
-
-def remove_url(dataframe, c):
-    """Removes URLs.
-
-    Removes URLs for any text in the dataframe.
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    def _remove_url(text):
-        return re.sub(r'http\S+', '', text)
-    if c == '':
-        dataframe[f'{c}_nonurl'] = dataframe['rawContent'].apply(_remove_url)
-    else:
-        dataframe[f'{c}_nonurl'] = dataframe[c].apply(_remove_url)
-    try:
-        del df[c]
-    except KeyError:
-        pass
-    return dataframe, f'{c}_nonurl'
-
-def remove_emoji(dataframe, c):
-    """Removes emojis
-
-    Removes emojis for each token list in the dataframe.
-    WARNING: tokenization must have been carried out beforehand!
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    def _remove_emoji(tokens):
-        return [token for token in tokens if not any(char in emoji.EMOJI_DATA for char in token)]
-    dataframe[f'{c}_nonemoji'] = dataframe[c].apply(_remove_emoji)
-    del df[c]
-    return dataframe, f'{c}_nonemoji'
-    
-def lemmatize(dataframe, c):
-    """Performs a lemmatization.
-
-    Lemmatization of all token lists in the dataframe.
-    WARNING: tokenization must have been carried out beforehand!
-
-    Args:
-        dataframe: pandas Dataframe (best in INTERMEDIATE state)
-        c: column in dataframe to apply the function to
-    
-    Returns:
-        updated dataframe and column name to which function was applied
-    """
-    lemmatizer = WordNetLemmatizer()
-    def _lemmatize(tokens):
-        return [lemmatizer.lemmatize(token) for token in tokens]
-    dataframe[f'{c}_lemmatized'] = dataframe[c].apply(_lemmatize)
-    del df[c]
-    return dataframe, f'{c}_lemmatized'
-
-
-if __name__ == '__main__':
-    # setup logging
-    logging.basicConfig(
-        format='%(levelname)s %(message)s',
-        level=logging.INFO
-    )
-
-    # setup cli with argparse
-    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    parser = argparse.ArgumentParser(description='Pre-processes text data', 
-                                    epilog='Made with <3 by Lukas Schroeder')    
-    parser.add_argument('path', help='Path to a .FEATHER file')
-    parser.add_argument('--remove_url', help='removes URLs', action='store_true')
-    parser.add_argument('--fix_contractions', help='converts English short forms to long forms', 
-                        action='store_true')
-    parser.add_argument('--lowercase', help='lowercase each token', action='store_true')
-    parser.add_argument('--remove_punct', help='removes puncture', action='store_true')
-    parser.add_argument('--remove_stopwords', help='removes stopwords', action='store_true')
-    parser.add_argument('--remove_emoji', help='removes emojis', action='store_true')
-    parser.add_argument('--lemmatize', help='performs a lemmatization', action='store_true')
-    args = parser.parse_args()
-
-    # load raw dataframe
-    logging.info('Load dataset...')
-    df = pd.read_feather(path=args.path)
-
-    # run preprocessing pipeline
-    logging.warning('Run preprocessing pipeline:')
-    c = ''
-    if args.remove_url:
-        logging.info('  ~  remove urls...')
-        df, c = remove_url(dataframe=df, c=c)
-    if args.fix_contractions:
-        logging.info('  ~  fix contractions...')
-        df, c = fix_contractions(dataframe=df, c=c)
-    logging.info('  ~  tokenize...')
-    df, c = tokenize(dataframe=df, c=c)
-    if args.lowercase:
-        logging.info('  ~  lowercase...')
-        df, c = lowercase(dataframe=df, c=c)
-    if args.remove_punct:
-        logging.info('  ~  remove puncture...')
-        df, c = remove_punct(dataframe=df, c=c)
-    if args.remove_stopwords:
-        logging.info('  ~  remove stopwords...')
-        df, c = remove_stopwords(dataframe=df, c=c)
-    if args.remove_emoji:
-        logging.info('  ~  remove emojis...')
-        df, c = remove_emoji(dataframe=df, c=c)
-    if args.lemmatize:
-        logging.info('  ~  lemmatize...')
-        df, c = lemmatize(dataframe=df, c=c)
-    df = df.rename(columns={c: 'preprocessed_text'})
-    logging.info('Preprocessing pipeline executed successfully!')
-
-    # export results
-    logging.warning('Export results...')
-    df.to_feather(f"{os.path.join(PROJECT_ROOT, 'data', 'processed')}/twitter_tweets_processed.feather")
-    df.to_csv(f"{os.path.join(PROJECT_ROOT, 'data', 'processed')}/twitter_tweets_processed.csv", index=False)
-    logging.info('Done.')
+        Executes the previously specified methods of the pipeline
+        
+        Returns:
+            dataframe: the pandas dataframe, with the 'preprocessed_text' column containing the processed text
+        """
+        logger.warning('starting default preprocessing pipeline')
+        self.remove_urls()
+        self.remove_mentions()
+        self.fix_contractions()
+        self.tokenize_text()
+        self.lowercase()
+        self.remove_punct()
+        self.remove_numerics()
+        self.remove_stopwords()
+        self.remove_emoji()
+        self.lemmatize()
+        logger.info('preprocessing completed successfully!')
+        return self.dataframe

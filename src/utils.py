@@ -3,6 +3,7 @@ import pickle
 import os
 import ssl
 import smtplib
+import logging
 
 def safe_as_pkl(obj, filename:str, path:str):
     """Serial object.
@@ -90,3 +91,26 @@ def shutdown():
         os.system('shutdown /s /t 0')
     else:
         os.system('sudo shutdown now')
+
+
+class Logger:
+    """
+    A custom logger class for logging messages with various log levels.
+
+    Attributes:
+        logger (logging.Logger): The logger object responsible for handling log messages.
+    """
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        # define the format of the log messages
+        log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        
+        # create a StreamHandler that outputs the messages to the console
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(log_format)
+        
+        # add the StreamHandler to the logger
+        self.logger.addHandler(console_handler)
