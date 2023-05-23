@@ -8,6 +8,10 @@ import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
 
+class TwitterAPIEndpointError(Exception):
+    """Code no longer works because Twitter blocks the API endpoints used for scraping"""
+
+
 class IncorrectNumberOfPostsCollected(Exception):
     """Raises if either too many posts have been collected or posts are missing."""
 
@@ -64,23 +68,6 @@ def get_twitter_posts(query:str, limit:int=500_000):
             _list_of_tweets.append(_)
             # posts that have already been collected are regularly cached
             if (i+1)%(limit/10)==0:
-
-
-
-
-
-                #
-                #
-                #   WARNING: CACHING NO LONGER WORKS
-                #   Due to changes in cache method in utils.cache
-                #   The script no longer works
-                #
-                #
-
-
-
-
-
                 utils.cache(obj=_list_of_tweets, caching_token=caching_token)
                 # the list is deleted and recreated to save memory
                 del _list_of_tweets
@@ -111,7 +98,7 @@ def get_twitter_posts(query:str, limit:int=500_000):
 
     return df
 
-
+raise TwitterAPIEndpointError
 if __name__ == '__main__':
     # setup cli with argparse
     PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
