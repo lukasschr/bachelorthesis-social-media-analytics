@@ -11,11 +11,23 @@ logger = Logger().logger
 
 
 class CleaningPipeline:
+    """Data cleaning pipeline for tweet data.
+
+    Note: The data must be in the form of a list of Tweet objects in a PKL file!
+
+    Attributes:
+        path: path to twitter_tweets_raw.pkl
+    """
     def __init__(self, path) -> None:
         logger.info('initialize pipeline and load & transform list of tweets in raw dataframe...')
         self.df = self._get_raw_df(path=path)
 
     def run(self):
+        """Execute the cleaning pipeline.
+
+        Returns:
+            df (pandas.DataFrame): the cleaned dataframe.
+        """
         logger.warning('starting data cleaning...')
         logger.info('formating date...')
         self.df['date'] = self.df['date'].apply(lambda x: datetime.datetime.strptime(x, "%b %d, %Y · %I:%M %p %Z"))
