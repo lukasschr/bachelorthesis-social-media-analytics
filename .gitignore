@@ -1,7 +1,7 @@
 .vscode
 .cache
 .rclone
-data/.archive
+archive
 data/raw
 data/intermediate
 data/processed
