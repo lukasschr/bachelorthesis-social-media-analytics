@@ -5,9 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 
 from src.data.nitter_scraper_standalone_v2 import Tweet, TweetScraper
-from src.utils import Logger
-
-logger = Logger().logger
+from src.utils import logger
 
 
 class CleaningPipeline:

@@ -10,9 +10,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import WordPunctTokenizer
 
 from tqdm import tqdm
-from src.utils import Logger
-
-logger = Logger().logger
+from src.utils import logger
 
 
 class PreprocessingPipeline:
