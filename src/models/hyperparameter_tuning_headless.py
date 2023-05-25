@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
     if args.search_method == 'random':
         df = ht.random_search(args.path_dataframe, list_parameter_combinations, args.multicore)
-        df.to_feather(os.path.join('models', 'ht_results_randomsearch.feather'))
+        df.to_feather(os.path.join('data', 'modeling', 'ht_results_randomsearch.feather'))
     
     elif args.search_method == 'grid':
         df = ht.grid_search(args.path_dataframe, list_parameter_combinations, args.multicore)
-        df.to_feather(os.path.join('models', 'ht_results_gridsearch.feather'))
+        df.to_feather(os.path.join('data', 'modeling', 'ht_results_gridsearch.feather'))
