@@ -1,10 +1,9 @@
 .vscode
-.cache
-.rclone
 archive
 data/raw
 data/intermediate
 data/processed
+data/modeling
 notebooks/.ipynb_checkpoints/
 .env
 src.egg-info
