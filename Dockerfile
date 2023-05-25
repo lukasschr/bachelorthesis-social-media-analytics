@@ -16,3 +16,5 @@ CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--al
 
 # docker build -t bt_project .
 # docker run -d -p 8888:8888 bt_project
+# docker save -o image.tar bt_project
+# docker load -i image.tar
