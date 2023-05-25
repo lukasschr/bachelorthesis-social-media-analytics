@@ -1,8 +1,4 @@
-from email.message import EmailMessage
 import pickle
-import os
-import ssl
-import smtplib
 import logging
 
 
