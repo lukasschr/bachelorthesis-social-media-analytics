@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('search_method', choices=['random', 'grid'], help='')
     parser.add_argument('--path_dataframe', required=True, help='')
     parser.add_argument('--path_params', required=True, help='')
-    parser.add_argument('--multicore', required=True, action='store_true', help='')
+    parser.add_argument('--multicore', action='store_true', help='')
     args, unknown = parser.parse_known_args()
 
     list_parameter_combinations = load_pkl(args.path_params)

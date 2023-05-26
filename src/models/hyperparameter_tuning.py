@@ -44,7 +44,7 @@ def random_search(path:str, list_parameter_combinations:list, multicore:bool=Fal
     except KeyboardInterrupt:
         pass
 
-    return pd.DataFrame(results)
+    return pd.DataFrame(results).astype(str)
 
 
 def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False):
@@ -83,4 +83,4 @@ def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False
     except KeyboardInterrupt:
         pass
 
-    return pd.DataFrame(results)
+    return pd.DataFrame(results).astype(str)
