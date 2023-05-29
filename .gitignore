@@ -4,6 +4,7 @@ data/raw
 data/intermediate
 data/processed
 data/modeling
+models
 notebooks/.ipynb_checkpoints/
 .env
 src.egg-info
