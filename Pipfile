@@ -21,6 +21,8 @@ paramiko = "*"
 beautifulsoup4 = "*"
 selenium = "*"
 langdetect = "*"
+statsmodels = "*"
+pmdarima = "*"
 
 [dev-packages]
 
