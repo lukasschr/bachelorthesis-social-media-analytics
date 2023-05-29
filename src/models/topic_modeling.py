@@ -82,7 +82,7 @@ class LdaMulticoreModel(LdaModel):
     def __init__(self, text:list) -> None:
         super().__init__(text)
         logger.info('enable multiprocessing...')
-        self.cores = multiprocessing.cpu_count() - 1 # max number of processor cores that can be used for the calculations
+        self.cores = multiprocessing.cpu_count() # max number of processor cores that can be used for the calculations
 
     def build(self, seed=time.time(), **kwargs):
         """Builds the LDA model.

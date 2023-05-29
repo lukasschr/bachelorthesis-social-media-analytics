@@ -2,8 +2,10 @@ import random
 
 from src.models import topic_modeling as tm
 from src.utils import logger
-import pandas as pd
 from tqdm import tqdm
+import pandas as pd
+import pickle
+import os
 
 
 def random_search(path:str, list_parameter_combinations:list, multicore:bool=False):
@@ -39,6 +41,7 @@ def random_search(path:str, list_parameter_combinations:list, multicore:bool=Fal
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
             _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
             del lda_model
+            _cache_objects(_)
             results.append(_)
             logger.info('Done. \n')
     except KeyboardInterrupt:
@@ -78,9 +81,16 @@ def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
             _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
             del lda_model
+            _cache_objects(_)
             results.append(_)
             logger.info('Done. \n')
     except KeyboardInterrupt:
         pass
 
     return pd.DataFrame(results).astype(str)
+
+
+def _cache_objects(obj):
+    path = os.path.join('data', 'modeling')
+    with open(f'{path}/cache_hyperparameter_tuning.pkl', 'ab') as f:
+        pickle.dump(obj, f)
