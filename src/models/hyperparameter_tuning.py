@@ -6,6 +6,7 @@ from tqdm import tqdm
 import pandas as pd
 import pickle
 import os
+import gc
 
 
 def random_search(path:str, list_parameter_combinations:list, multicore:bool=False):
@@ -43,6 +44,7 @@ def random_search(path:str, list_parameter_combinations:list, multicore:bool=Fal
             del lda_model
             _cache_objects(_)
             results.append(_)
+            gc.collect()
             logger.info('Done. \n')
     except KeyboardInterrupt:
         pass
@@ -83,6 +85,7 @@ def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False
             del lda_model
             _cache_objects(_)
             results.append(_)
+            gc.collect()
             logger.info('Done. \n')
     except KeyboardInterrupt:
         pass
