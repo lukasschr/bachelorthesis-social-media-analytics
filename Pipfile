@@ -23,6 +23,7 @@ selenium = "*"
 langdetect = "*"
 statsmodels = "*"
 pmdarima = "*"
+scikit-learn = "*"
 
 [dev-packages]
 
