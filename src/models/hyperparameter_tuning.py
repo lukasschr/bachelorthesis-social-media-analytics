@@ -41,11 +41,11 @@ def random_search(path:str, list_parameter_combinations:list, multicore:bool=Fal
 
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
             _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
-            del lda_model
+            del lda_model # reclaim memory
             _cache_objects(_)
             results.append(_)
-            gc.collect()
-            logger.info('Done. \n')
+            gc.collect() # python garbage collection
+            logger.info(f'Done. (Model #{len(results)})\n')
     except KeyboardInterrupt:
         pass
 
@@ -82,11 +82,11 @@ def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False
 
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
             _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
-            del lda_model
+            del lda_model # reclaim memory
             _cache_objects(_)
             results.append(_)
-            gc.collect()
-            logger.info('Done. \n')
+            gc.collect() # python garbage collection
+            logger.info(f'Done. (Model #{len(results)})\n')
     except KeyboardInterrupt:
         pass
 

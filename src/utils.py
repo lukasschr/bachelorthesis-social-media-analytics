@@ -8,8 +8,8 @@ def safe_as_pkl(obj, path:str):
     Object is saved as a .pkl file in the specified location.
 
     Args:
-        obj: the object to be serialized
-        path: location
+        obj (object): the object to be serialized
+        path (str): location
     """
     with open(f'{path}', 'wb') as f:
         pickle.dump(obj, f)
@@ -22,7 +22,7 @@ def load_pkl(path):
     Note: If only one object is de-serialized, then only the object is returned instead of a list
 
     Args:
-        path: path to .pkl file
+        path (str): path to .pkl file
 
     Returns:
         List of de-serialized objects OR de-serialized object
@@ -62,4 +62,4 @@ class Logger:
         
         # add the StreamHandler to the logger
         self.logger.addHandler(console_handler)
-logger = Logger().logger
+logger = Logger().logger # initialize logger

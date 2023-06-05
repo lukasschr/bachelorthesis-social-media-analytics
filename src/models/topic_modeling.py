@@ -31,7 +31,7 @@ class LdaModel:
         Calculates an LDA model using gensim.
 
         Args:
-            seed (optional): can be handed over for reproducibility
+            seed (int, optional): can be handed over for reproducibility
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
         logger.info('calculate lda model... (this can take a while)')
@@ -90,7 +90,7 @@ class LdaMulticoreModel(LdaModel):
         Calculates an LDA model using gensim and multicore.
 
         Args:
-            seed (optional): can be handed over for reproducibility
+            seed (int, optional): can be handed over for reproducibility
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
         logger.info('calculate lda model...')
@@ -109,15 +109,15 @@ def evaluate(model, text, dictionary):
     Calculates metrics that can help evaluate LDA models.
 
     Args:
-        model: Lda Model
-        text: text used to create the model
-        dictionary: dictionary used to create the model
+        model (gensim.models.LdaModel): Lda Model
+        text (list): text used to create the model
+        dictionary (dict): dictionary used to create the model
     """
     logger.info('calculate coherence score...')
     # calculate coherence score
     coherence_model = models.coherencemodel.CoherenceModel(model=model, texts=text, dictionary=dictionary, 
                                                             coherence='c_v')
     coherence_score = coherence_model.get_coherence()
-    del coherence_model
+    del coherence_model # reclaim memory
     logger.info(f'Done. Coherence score calculated successfully! Score: {coherence_score}')
     return coherence_score

@@ -5,6 +5,7 @@ from src.models import hyperparameter_tuning as ht
 from src.utils import load_pkl
 import pandas as pd
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='', epilog='Made with <3 by Lukas Schroeder')
     parser.add_argument('search_method', choices=['random', 'grid'], help='')
