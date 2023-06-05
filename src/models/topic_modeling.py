@@ -118,5 +118,6 @@ def evaluate(model, text, dictionary):
     coherence_model = models.coherencemodel.CoherenceModel(model=model, texts=text, dictionary=dictionary, 
                                                             coherence='c_v')
     coherence_score = coherence_model.get_coherence()
+    del coherence_model
     logger.info(f'Done. Coherence score calculated successfully! Score: {coherence_score}')
     return coherence_score
