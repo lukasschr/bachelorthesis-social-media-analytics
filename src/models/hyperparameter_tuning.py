@@ -86,7 +86,7 @@ def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False
             _cache_objects(_)
             results.append(_)
             gc.collect() # python garbage collection
-            logger.info(f'Done. (Model #{len(results)})\n')
+            logger.info(f'Done. \n')
     except KeyboardInterrupt:
         pass
 
