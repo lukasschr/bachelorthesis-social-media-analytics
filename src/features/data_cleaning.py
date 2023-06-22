@@ -18,7 +18,7 @@ class CleaningPipeline:
     """
     def __init__(self, path) -> None:
         logger.info('initialize pipeline and load & transform list of tweets in raw dataframe...')
-        self.df = self._get_raw_df(path=path)
+        self.df = pd.read_feather(path)
 
     def run(self):
         """Execute the cleaning pipeline.
@@ -95,9 +95,3 @@ class CleaningPipeline:
             return True 
         else:
             return False
-
-
-    def _get_raw_df(self, path):
-        list_of_tweets = TweetScraper.load_collected_tweets(path=path)
-        dict_of_tweets =  [{"url": tweet.url, "date": tweet.date, "rawContent": tweet.rawContent} for tweet in list_of_tweets]
-        return pd.DataFrame(dict_of_tweets)
