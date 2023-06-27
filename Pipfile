@@ -24,6 +24,7 @@ langdetect = "*"
 statsmodels = "*"
 pmdarima = "*"
 scikit-learn = "*"
+xgboost = "*"
 
 [dev-packages]
 
