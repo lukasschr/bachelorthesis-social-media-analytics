@@ -56,5 +56,3 @@ def random_search(path:str, search_space:list):
 def _cache_objects(obj):
     with open(f'cache_hyperparameter_tuning.pkl', 'ab') as f:
         pickle.dump(obj, f)
-
-# python hyperparameter_tuning_headless.py --path_dataframe 'data/processed/twitter_tweets_processed.feather' --path_params 'data/modeling/tm_ht_search_space.pkl'

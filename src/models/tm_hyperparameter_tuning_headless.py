@@ -16,3 +16,5 @@ if __name__ == '__main__':
 
     df = ht.random_search(args.path_dataframe, search_space)
     df.to_feather(os.path.join('data', 'modeling', 'ht_results_randomsearch.feather'))
+
+# python hyperparameter_tuning_headless.py --path_dataframe 'data/processed/twitter_tweets_processed.feather' --path_params 'data/modeling/tm_ht_search_space.pkl'
