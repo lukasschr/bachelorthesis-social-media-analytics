@@ -36,7 +36,7 @@ def random_search(path:str, search_space:list):
 
             m, s = base_lda_model.build(**dict_parameter_combination)
 
-            cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
+            cs = tm.evaluate(model=base_lda_model.model, text=base_lda_model.text, dictionary=base_lda_model.dictionary)
             if cs > best_cs:
                 best_cs = cs
             _ = {**{'seed': s}, **dict_parameter_combination, **{'coherence_score': cs}}
