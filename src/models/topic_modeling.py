@@ -37,7 +37,7 @@ class LdaModel:
         self._model = models.LdaModel(corpus=self._corpus, id2word=self._dictionary, **kwargs, 
                                        random_state=int(seed))
         logger.info(f'Done. Model calculated successfully!')
-        return self._model
+        return self._model, seed
     
     # getter & setter
     def __get_text(self):
@@ -87,7 +87,7 @@ class LdaMulticoreModel(LdaModel):
                                                         workers=self.cores, **kwargs, 
                                                         random_state=int(seed)) 
         logger.info(f'Done. Model calculated successfully!')
-        return self._model
+        return self._model, seed
 
 
 def evaluate(model, text, dictionary):

@@ -5,7 +5,7 @@ from src.models import topic_modeling as tm
 from src.utils import logger
 import pandas as pd
 import pickle
-import gc
+# import gc
 
 
 def random_search(path:str, search_space:list):
@@ -22,6 +22,7 @@ def random_search(path:str, search_space:list):
         pandas.DataFrame: a dataframe containing the results of the calculated models
     """
     text_data = pd.read_feather(path)['preprocessed_text']
+    base_lda_model = tm.LdaMulticoreModel(text=text_data)
     random.shuffle(search_space)
 
     best_cs = 0
@@ -33,17 +34,15 @@ def random_search(path:str, search_space:list):
             
             start_time = time.time()
 
-            lda_model = tm.LdaMulticoreModel(text=text_data)
-            lda_model.build(**dict_parameter_combination)
+            m, s = base_lda_model.build(**dict_parameter_combination)
 
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
             if cs > best_cs:
                 best_cs = cs
-            _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
-            del lda_model # reclaim memory
+            _ = {**{'seed': s}, **dict_parameter_combination, **{'coherence_score': cs}}
             _cache_objects(_)
             results.append(_)
-            gc.collect() # python garbage collection
+            # gc.collect() # python garbage collection
 
             calculation_time = round((time.time() - start_time) / 60, 2)
 
