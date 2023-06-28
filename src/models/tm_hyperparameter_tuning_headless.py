@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from src.models import hyperparameter_tuning as ht
+from src.models import tm_hyperparameter_tuning as ht
 from src.utils import load_pkl
 import pandas as pd
 
