@@ -17,7 +17,7 @@ class CleaningPipeline:
         path: path to twitter_tweets_raw.pkl
     """
     def __init__(self, path) -> None:
-        logger.info('initialize pipeline and load & transform list of tweets in raw dataframe...')
+        logger.info('initialize pipeline and load raw dataframe...')
         self.df = pd.read_feather(path)
 
     def run(self):
@@ -28,7 +28,7 @@ class CleaningPipeline:
         """
         logger.warning('starting data cleaning...')
         logger.info('formating date...')
-        self.df['date'] = self.df['date'].apply(lambda x: datetime.datetime.strptime(x, "%b %d, %Y · %I:%M %p %Z"))
+        self.df['date'] = pd.to_datetime(self.df['date']).dt.tz_localize(None)
 
         if not self._text_without_null_values():
             logger.warning('entries without text data were found!')
@@ -52,7 +52,7 @@ class CleaningPipeline:
             non_english_posts = self.df.query('lang != "en"')
             self.df.drop(index=non_english_posts.index, inplace=True)
 
-        self.df.drop(columns=['lang'], inplace=True)
+        self.df.drop(columns=['lang', 'replyCount', 'retweetCount', 'likeCount'], inplace=True)
         self.df.set_index('url', inplace=True)
         self.df.reset_index(inplace=True)
         logger.info('data cleaning completed successfully!')
@@ -66,7 +66,7 @@ class CleaningPipeline:
             return True
         
     def _creation_date_in_period(self):
-        if self.df.query('date < "2022-10-01" or date > "2023-03-31"').empty:
+        if self.df.query('date < "2018-04-01" or date > "2023-04-01"').empty:
             return True
         else:
             return False
@@ -78,20 +78,7 @@ class CleaningPipeline:
             return True
         
     def _all_texts_in_english(self):
-        def _detect_language():
-            logger.warning('determine language for each entry...')
-            def __detect_language(text):
-                try:
-                    lang = detect(text)
-                except:
-                    lang = None
-                return lang
-            tqdm.pandas()
-            # determine the language for each tweet
-            self.df['lang'] = self.df['rawContent'].progress_apply(__detect_language)
-        
-        _detect_language()
         if self.df['lang'].eq('en').all():
-            return True 
+            return True
         else:
             return False

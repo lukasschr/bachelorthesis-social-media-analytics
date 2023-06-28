@@ -83,7 +83,7 @@ class PreprocessingPipeline:
         """Removes punctuation within token lists."""
         logger.info('remove punctuation...')
         # adding more characters to the punctuation list
-        punct = string.punctuation + "’" + "``" +"`" + "''" +"'" + "•" + "“" + "”" + "…" + "�" + "‘" + "…" + "/…" + "-…" + "-#" + "’" + "..."
+        punct = string.punctuation + "’" + "``" +"`" + "''" +"'" + "•" + "“" + "”" + "…" + "�" + "‘" + "…" + "/…" + "-…" + "-#" + "’" + "..." + ".”" + "!!"
         def _remove_punct(tokens):
             return [token for token in tokens if token not in punct]
         self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_punct)
@@ -100,6 +100,8 @@ class PreprocessingPipeline:
         logger.info('remove stopwords...')
         # define list of stopwords
         stop_words = stopwords.words('english')
+        additional_stop_words = ['u']
+        stop_words.extend(additional_stop_words)
         def _remove_stopwords(tokens):
             return [token for token in tokens if token not in stop_words and len(token) > 1]
         self.__dataframe['preprocessed_text'] = self.__dataframe['preprocessed_text'].progress_apply(_remove_stopwords)
