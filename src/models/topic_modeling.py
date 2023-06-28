@@ -23,7 +23,6 @@ class LdaModel:
         self._dictionary = corpora.Dictionary(self._text) # create a dictionary/id2word
         self._corpus = [self._dictionary.doc2bow(text) for text in self._text] # create a corpus
         self._model = None
-        self._seed = None
 
     def build(self, seed=time.time(), **kwargs):
         """Builds the LDA model.
@@ -35,11 +34,9 @@ class LdaModel:
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
         logger.info('calculate lda model... (this can take a while)')
-        self._seed = seed
         self._model = models.LdaModel(corpus=self._corpus, id2word=self._dictionary, **kwargs, 
-                                       random_state=int(self._seed))
-        calculation_time = (time.time() - self._seed) / 60  # in minutes
-        logger.info(f'Done. Model calculated successfully! Calculation time: {round(calculation_time, 4)} minutes')
+                                       random_state=int(seed))
+        logger.info(f'Done. Model calculated successfully!')
         return self._model
     
     # getter & setter
@@ -57,19 +54,11 @@ class LdaModel:
             return self._model
         else:
             raise ModelNotBuildError
-    
-    def __get_seed(self):
-        if self._seed is not None:
-            return int(self._seed)
-        else:
-            raise ModelNotBuildError  
 
     text = property(__get_text)
     dictionary = property(__get_dictionary)
     corpus = property(__get_corpus)
     model = property(__get_model)
-    seed = property(__get_seed)
-
 
 class LdaMulticoreModel(LdaModel):
     """LDA Multicore Model
@@ -82,7 +71,7 @@ class LdaMulticoreModel(LdaModel):
     def __init__(self, text:list) -> None:
         super().__init__(text)
         logger.info('enable multiprocessing...')
-        self.cores = multiprocessing.cpu_count() # max number of processor cores that can be used for the calculations
+        self.cores = multiprocessing.cpu_count()-1 # max number of processor cores that can be used for the calculations
 
     def build(self, seed=time.time(), **kwargs):
         """Builds the LDA model.
@@ -94,12 +83,10 @@ class LdaMulticoreModel(LdaModel):
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
         logger.info('calculate lda model...')
-        self._seed = seed
         self._model = models.ldamulticore.LdaMulticore(corpus=self._corpus, id2word=self._dictionary, 
                                                         workers=self.cores, **kwargs, 
-                                                        random_state=int(self._seed)) 
-        calculation_time = (time.time() - self._seed) / 60  # in minutes
-        logger.info(f'Done. Model calculated successfully! Calculation time: {round(calculation_time, 4)} minutes')
+                                                        random_state=int(seed)) 
+        logger.info(f'Done. Model calculated successfully!')
         return self._model
 
 

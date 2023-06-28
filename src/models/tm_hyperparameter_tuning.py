@@ -1,15 +1,14 @@
 import random
+import time
 
 from src.models import topic_modeling as tm
 from src.utils import logger
-from tqdm import tqdm
 import pandas as pd
 import pickle
-import os
 import gc
 
 
-def random_search(path:str, list_parameter_combinations:list, multicore:bool=False):
+def random_search(path:str, search_space:list):
     """Random Search Hyperparameter Tuning.
 
     Randomly selects a parameter constellation from a list of hyperparameters and calculates the model. 
@@ -18,82 +17,42 @@ def random_search(path:str, list_parameter_combinations:list, multicore:bool=Fal
     Args:
         path (str): path to the .FEATHER file of the preprocessed dataframe
         list_parameter_combinations (list): list of parameter combinations. The combinations must be available as DICT
-        multicore (bool, optional): determines whether multiprocessing should be used for the calculations
 
     Returns:
         pandas.DataFrame: a dataframe containing the results of the calculated models
     """
     text_data = pd.read_feather(path)['preprocessed_text']
-    random.shuffle(list_parameter_combinations)
+    random.shuffle(search_space)
 
+    best_cs = 0
     results = []
     try:
         while True:
-            dict_parameter_combination = list_parameter_combinations.pop()
-            logger.info(f'Initialize tuning; parameters: {str(dict_parameter_combination)}')
+            dict_parameter_combination = search_space.pop()
+            logger.info(f'Initialize random tuning; parameters: {str(dict_parameter_combination)}')
             
-            if multicore:
-                lda_model = tm.LdaMulticoreModel(text=text_data)
-                lda_model.build(**dict_parameter_combination)
-            else:
-                lda_model = tm.LdaModel(text=text_data)
-                lda_model.build(**dict_parameter_combination)
+            start_time = time.time()
+
+            lda_model = tm.LdaMulticoreModel(text=text_data)
+            lda_model.build(**dict_parameter_combination)
 
             cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
+            if cs > best_cs:
+                best_cs = cs
             _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
             del lda_model # reclaim memory
             _cache_objects(_)
             results.append(_)
             gc.collect() # python garbage collection
-            logger.info(f'Done. (Model #{len(results)})\n')
+
+            calculation_time = round((time.time() - start_time) / 60, 2)
+
+            logger.info(f'Done. (Model #{len(results)}); Calculation time: {calculation_time}; Currently best value: {best_cs}\n')
     except KeyboardInterrupt:
         pass
 
     return pd.DataFrame(results).astype(str)
-
-
-def grid_search(path:str, list_parameter_combinations:list, multicore:bool=False):
-    """Grid Search Hyperparameter Tuning.
-
-    Iterates over each possible parameter constellation from a given list and calculates the model. 
-    The process can be aborted with a keyboard interrupt, but it shouldn't be
-
-    Args:
-        path (str): path to the .FEATHER file of the preprocessed dataframe
-        list_parameter_combinations (list): list of parameter combinations. The combinations must be available as DICT
-        multicore (bool, optional): determines whether multiprocessing should be used for the calculations
-
-    Returns:
-        pandas.DataFrame: a dataframe containing the results of the calculated models
-    """
-    text_data = pd.read_feather(path)['preprocessed_text']
-
-    results = []
-    try:
-        for dict_parameter_combination in tqdm(list_parameter_combinations, total=len(list_parameter_combinations)):
-            logger.info(f'Initialize tuning; parameters: {str(dict_parameter_combination)}')
-            
-            if multicore:
-                lda_model = tm.LdaMulticoreModel(text=text_data)
-                lda_model.build(**dict_parameter_combination)
-            else:
-                lda_model = tm.LdaModel(text=text_data)
-                lda_model.build(**dict_parameter_combination)
-
-            cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
-            _ = {**{'seed': lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
-            del lda_model # reclaim memory
-            _cache_objects(_)
-            results.append(_)
-            gc.collect() # python garbage collection
-            logger.info(f'Done. \n')
-    except KeyboardInterrupt:
-        pass
-
-    return pd.DataFrame(results).astype(str)
-
 
 def _cache_objects(obj):
-    path = os.path.join('data', 'modeling')
-    with open(f'{path}/cache_hyperparameter_tuning.pkl', 'ab') as f:
+    with open(f'cache_hyperparameter_tuning.pkl', 'ab') as f:
         pickle.dump(obj, f)
