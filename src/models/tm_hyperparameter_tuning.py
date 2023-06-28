@@ -44,9 +44,9 @@ def random_search(path:str, search_space:list):
             _cache_objects(_)
             results.append(_)
             # gc.collect() # python garbage collection
-
-            logger.info(f'Done. (Model #{len(results)}); Calculation time: {calculation_time} min')
             calculation_time = round((time.time() - start_time) / 60, 2)
+            
+            logger.info(f'Done. (Model #{len(results)}); Calculation time: {calculation_time} min')
             logger.info(f'Currently best value: {best_cs}\n')
 
     except KeyboardInterrupt:
