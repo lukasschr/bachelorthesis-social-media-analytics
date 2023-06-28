@@ -23,8 +23,9 @@ class LdaModel:
         self._dictionary = corpora.Dictionary(self._text) # create a dictionary/id2word
         self._corpus = [self._dictionary.doc2bow(text) for text in self._text] # create a corpus
         self._model = None
+        self._seed = int(time.time())
 
-    def build(self, seed=time.time(), **kwargs):
+    def build(self, seed:int=None, **kwargs):
         """Builds the LDA model.
 
         Calculates an LDA model using gensim.
@@ -33,11 +34,13 @@ class LdaModel:
             seed (int, optional): can be handed over for reproducibility
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
+        if not seed == None:
+            self._seed = int(seed)
         logger.info('calculate lda model... (this can take a while)')
         self._model = models.LdaModel(corpus=self._corpus, id2word=self._dictionary, **kwargs, 
-                                       random_state=int(seed))
+                                       random_state=self._seed)
         logger.info(f'Done. Model calculated successfully!')
-        return self._model, seed
+        return self._model
     
     # getter & setter
     def __get_text(self):
@@ -54,11 +57,18 @@ class LdaModel:
             return self._model
         else:
             raise ModelNotBuildError
+        
+    def __get_seed(self):
+        return self._seed
+        
+    def __set_seed(self, v:int):
+        self._seed = v
 
     text = property(__get_text)
     dictionary = property(__get_dictionary)
     corpus = property(__get_corpus)
     model = property(__get_model)
+    seed = property(__get_seed, __set_seed)
 
 class LdaMulticoreModel(LdaModel):
     """LDA Multicore Model
@@ -73,7 +83,7 @@ class LdaMulticoreModel(LdaModel):
         logger.info('enable multiprocessing...')
         self.cores = multiprocessing.cpu_count()-1 # max number of processor cores that can be used for the calculations
 
-    def build(self, seed=time.time(), **kwargs):
+    def build(self, seed:int=None, **kwargs):
         """Builds the LDA model.
 
         Calculates an LDA model using gensim and multicore.
@@ -82,12 +92,14 @@ class LdaMulticoreModel(LdaModel):
             seed (int, optional): can be handed over for reproducibility
             **kwargs: all common parameters and their values that can be passed to the LdaModel function
         """
+        if not seed == None:
+            self._seed = int(seed)
         logger.info('calculate lda model...')
         self._model = models.ldamulticore.LdaMulticore(corpus=self._corpus, id2word=self._dictionary, 
                                                         workers=self.cores, **kwargs, 
-                                                        random_state=int(seed)) 
+                                                        random_state=seed) 
         logger.info(f'Done. Model calculated successfully!')
-        return self._model, seed
+        return self._model
 
 
 def evaluate(model, text, dictionary):

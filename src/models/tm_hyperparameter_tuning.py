@@ -28,25 +28,27 @@ def random_search(path:str, search_space:list):
     best_cs = 0
     results = []
     try:
+        logger.info('~  ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   ~   \n')
         while True:
             dict_parameter_combination = search_space.pop()
             logger.info(f'Initialize random tuning; parameters: {str(dict_parameter_combination)}')
             
             start_time = time.time()
 
-            m, s = base_lda_model.build(**dict_parameter_combination)
+            base_lda_model.build(seed=int(time.time()), **dict_parameter_combination)
 
             cs = tm.evaluate(model=base_lda_model.model, text=base_lda_model.text, dictionary=base_lda_model.dictionary)
             if cs > best_cs:
                 best_cs = cs
-            _ = {**{'seed': s}, **dict_parameter_combination, **{'coherence_score': cs}}
+            _ = {**{'seed': base_lda_model.seed}, **dict_parameter_combination, **{'coherence_score': cs}}
             _cache_objects(_)
             results.append(_)
             # gc.collect() # python garbage collection
 
+            logger.info(f'Done. (Model #{len(results)}); Calculation time: {calculation_time} min')
             calculation_time = round((time.time() - start_time) / 60, 2)
+            logger.info(f'Currently best value: {best_cs}\n')
 
-            logger.info(f'Done. (Model #{len(results)}); Calculation time: {calculation_time}; Currently best value: {best_cs}\n')
     except KeyboardInterrupt:
         pass
 

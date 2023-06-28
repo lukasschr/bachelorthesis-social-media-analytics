@@ -1,5 +1,4 @@
 import argparse
-import os
 
 from src.models import tm_hyperparameter_tuning as ht
 from src.utils import load_pkl
@@ -15,6 +14,6 @@ if __name__ == '__main__':
     search_space = load_pkl(args.path_params)
 
     df = ht.random_search(args.path_dataframe, search_space)
-    df.to_feather(os.path.join('data', 'modeling', 'ht_results_randomsearch.feather'))
+    df.to_feather('ht_results_randomsearch.feather')
 
 # python tm_hyperparameter_tuning_headless.py --path_dataframe '../../data/processed/twitter_tweets_processed.feather' --path_params '../../data/modeling/tm_ht_search_space.pkl'
