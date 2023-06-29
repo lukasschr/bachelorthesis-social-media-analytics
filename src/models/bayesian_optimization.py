@@ -11,7 +11,7 @@ from src.utils import logger, load_pkl
 def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dict, max_evals:int):
 
     def _target_function(parameter_combination:dict):
-        logger.info(f'Model #{len(result_df)}/{max_evals}; parameters: {str(parameter_combination)}')
+        logger.info(f'Model #{len(result_df)}/{max_evals-1}; parameters: {str(parameter_combination)}')
 
         start_time = time.time()
 
@@ -22,7 +22,7 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
         result_df.to_feather('tm_ht_results.feather')
 
         calculation_time = round((time.time() - start_time) / 60, 2)
-        logger.info(f'Done. Calculation time: {calculation_time} min')
+        logger.info(f'Calculation time: {calculation_time} min')
 
         best_coherence_score = result_df['coherence_score'].max()
         logger.info(f'Currently best value: {best_coherence_score}\n')
