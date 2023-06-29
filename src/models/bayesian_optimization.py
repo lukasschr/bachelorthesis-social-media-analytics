@@ -18,7 +18,7 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
         lda_model.build(seed=int(time.time()), **parameter_combination)
         cs = tm.evaluate(model=lda_model.model, text=lda_model.text, dictionary=lda_model.dictionary)
 
-        result_df.loc[len(result_df)] = {**{'seed': lda_model.seed}, **parameter_combination, **{'coherence_score': cs}}
+        result_df.loc[len(result_df)] = {**{'seed': lda_model.seed}, **{k: str(v) for k, v in parameter_combination.items()}, **{'coherence_score': cs}}
         result_df.to_feather('tm_ht_results.feather')
 
         calculation_time = round((time.time() - start_time) / 60, 2)
@@ -37,7 +37,7 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
     result_df = pd.DataFrame(columns=['seed'] + list(search_space.keys()) + ['coherence_score'])
 
     logger.warning('start bayesian optimization algorithm... \n')
-    optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals, verbose=False)
+    optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals, rstate=42, verbose=False)
     
     return result_df, optimized_parameters
 
