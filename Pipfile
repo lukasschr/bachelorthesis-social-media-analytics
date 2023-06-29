@@ -25,6 +25,7 @@ statsmodels = "*"
 pmdarima = "*"
 scikit-learn = "*"
 xgboost = "*"
+hyperopt = "*"
 
 [dev-packages]
 
