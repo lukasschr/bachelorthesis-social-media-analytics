@@ -37,7 +37,7 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
     result_df = pd.DataFrame(columns=['seed'] + list(search_space.keys()) + ['coherence_score'])
 
     logger.warning('start bayesian optimization algorithm... \n')
-    optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals, rstate=42, verbose=False)
+    optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals, verbose=False)
     
     return result_df, optimized_parameters
 
