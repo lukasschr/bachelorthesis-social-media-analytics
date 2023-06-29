@@ -21,12 +21,11 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
         result_df.loc[len(result_df)] = {**{'seed': lda_model.seed}, **parameter_combination, **{'coherence_score': cs}}
         result_df.to_feather('tm_ht_results.feather')
 
-        if cs > best_cs:
-            best_cs = cs
-
         calculation_time = round((time.time() - start_time) / 60, 2)
         logger.info(f'Done. Calculation time: {calculation_time} min')
-        logger.info(f'Currently best value: {best_cs}\n')
+
+        best_coherence_score = result_df['coherence_score'].max()
+        logger.info(f'Currently best value: {best_coherence_score}\n')
 
         return -cs# value to optimize; negate for maximization
 
@@ -36,9 +35,8 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
 
     logger.info('create result dataframe...')
     result_df = pd.DataFrame(columns=['seed'] + list(search_space.keys()) + ['coherence_score'])
-    best_cs = 0
 
-    logger.warning('start bayesian optimization algorithm... \n\n\n')
+    logger.warning('start bayesian optimization algorithm... \n')
     optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals, verbose=False)
     
     return result_df, optimized_parameters
@@ -55,4 +53,4 @@ if __name__ == '__main__':
 
     optimize_topic_modeling(args.path_dataframe, search_space, int(args.max_evals))
 
-## python bayesian_optimization.py --path_dataframe '../../data/processed/twitter_tweets_processed.feather' --path_params '../../data/modeling/tm_ht_search_space.pkl --max_evals 200'
+# python bayesian_optimization.py --path_dataframe '../../data/processed/twitter_tweets_processed.feather' --path_params '../../data/modeling/tm_ht_search_space.pkl' --max_evals 200
