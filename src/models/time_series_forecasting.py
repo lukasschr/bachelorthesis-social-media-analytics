@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from tqdm import tqdm
 from src.utils import logger
+import xgboost as xgb
 
 
 @dataclass
-class TimeSeries:
+class TopicTimeSeriesData:
     """"""
     id: int
     data: pd.DataFrame
     label: str = None
+
 
 @dataclass
 class XGBoostModel:
@@ -20,6 +21,9 @@ class XGBoostModel:
     
     data_train:pd.DataFrame = None
     data_test:pd.DataFrame = None
+
+    FEATURES:list = None
+    TARGET:str = None
     
     data_train_features:pd.DataFrame = None
     data_test_features:pd.DataFrame = None
@@ -27,26 +31,28 @@ class XGBoostModel:
     data_test_features_predictions:pd.DataFrame = None
 
     model = None
+    mae_before_ht = None
 
     def train_test_split(self, train_size:float):
         split = int(train_size * len(self.data))
         self.data_train, self.data_test = self.data[:split], self.data[split:]
         return self.data_train, self.data_test
-
-
-def tweet_topic_assignment(lda_model, topic_minimum_probability:float=0.4):
-    # iterate over each document in the corpus and assign it the most likely topic
-    topics = []
-    for doc in tqdm(lda_model.corpus, total=len(lda_model.corpus)):
-        doc_topics = lda_model.model.get_document_topics(doc, minimum_probability=topic_minimum_probability)
-        # check if a topic was found with sufficient probability (minimum_probability)
-        if doc_topics:
-            doc_topics = [int(_[0]) for _ in doc_topics] # transform to list of topics
-        else:
-            doc_topics = None
-        topics.append(doc_topics)
     
-    return topics
+    def build(self, **kwargs):
+        X_train = self.data_train_features[self.FEATURES]
+        y_train = self.data_train_features[self.TARGET]
+        X_test = self.data_test_features[self.FEATURES]
+        y_test = self.data_test_features[self.TARGET]
+
+        # Modell erstellen und trainieren
+        reg = xgb.XGBRegressor(**kwargs)
+        reg.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=False)
+        self.model = reg
+
+        self.data_test_features_predictions = self.data_test_features.assign(predictions=reg.predict(X_test))
+
+        return self.model
+        
 
 
 def process_to_timeseries(df_topic_assigned:pd.DataFrame):
