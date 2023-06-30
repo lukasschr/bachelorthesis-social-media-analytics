@@ -134,7 +134,7 @@ class PreprocessingPipeline:
 class DefaultPipeline(PreprocessingPipeline):
     """The default preprocessing pipeline.
 
-    Contains the run method, which executes the standard preprocessing pipeline
+    Contains the run method, which executes the standard preprocessing pipeline.
 
     Attributes:
         dataframe: A pandas dataframe; The text to be processed must be in the 'rawContent' column.
@@ -148,7 +148,7 @@ class DefaultPipeline(PreprocessingPipeline):
         Executes the previously specified methods of the pipeline
         
         Returns:
-            dataframe: the pandas dataframe, with the 'preprocessed_text' column containing the processed text
+            dataframe (pd.DataFrame): the pandas dataframe, with the 'preprocessed_text' column containing the processed text
         """
         logger.warning('starting default preprocessing pipeline')
         self.remove_urls()

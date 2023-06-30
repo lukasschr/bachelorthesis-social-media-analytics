@@ -11,7 +11,6 @@ import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
 
-
 @dataclass
 class Tweet:
     url:str
@@ -53,7 +52,15 @@ class Logger:
 
 
 def get_tweets(querystring:str, since:datetime.datetime, until:datetime.datetime, limit:int):
-    """
+    """Collects Twitter data.
+
+    Uses a scraper, which collects Twitter posts for a given query string and a given period of time.
+
+    Args:
+        querystring (str): query string to use to search for tweets
+        since (datetime.datetime): start time
+        until (datetime.datetime): end time
+        limit (int): specifies how many posts should be collected in total
     """
     tweets_to_collect_per_day = math.ceil(limit / ((until - since).days)) # aufrunden
     iteration_date = since
@@ -87,6 +94,18 @@ def get_tweets(querystring:str, since:datetime.datetime, until:datetime.datetime
 
 
 def transform_to_dataframe(path:str):
+    """Transforms collected data into a pandas dataframe.
+
+    Reads a file containing a list of Tweet objects. Then the data of the tweet objects is read out.
+    and transformed into a data frame.
+
+    Args:
+        path (str): path to .PKL file
+
+    Returns:
+        dataframe (pd.DataFrame): dataframe containing the collected data
+    
+    """
     list_of_tweets = []
     with open(path, 'rb') as f:
         while True:

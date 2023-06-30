@@ -11,7 +11,20 @@ from src.utils import logger, load_pkl
 
 
 def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dict, max_evals:int):
+    """Performs hyperparameter optimization for topic modeling.
 
+    For this purpose, a bayesian optimization is performed.
+
+    Args:
+        path_tweets_processed (pd.DataFrame): path to the .FEATHER file of the preprocessed data
+        search_space (dict): a defined search space that can be used by hyperopt
+        max_evals (int): number of maximum evaluations
+    
+    Returns:
+        result_df (pd.DataFrame): the results of the individual runs as a data frame
+        optimized_parameters (dict): the optimized parameters
+    """
+    
     def _target_function(parameter_combination:dict):
         logger.info(f'Model #{len(result_df)}/{max_evals-1}; parameters: {str(parameter_combination)}')
 
@@ -45,7 +58,19 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
 
 
 def optimize_xgb_modeling(xgb_model:tsf.XGBoostModel, search_space:dict, max_evals:int):
+    """Performs hyperparameter optimization for xgb modeling.
 
+    For this purpose, a bayesian optimization is performed.
+
+    Args:
+        xgb_model (XGBoostModel): xgb model
+        search_space (dict): a defined search space that can be used by hyperopt
+        max_evals (int): number of maximum evaluations
+    
+    Returns:
+        optimized_parameters (dict): the optimized parameters    
+    """
+    
     def _target_function(parameter_combination:dict):
         xgb_model.build(**parameter_combination)
         mae = mean_absolute_error(xgb_model.data_test_features[xgb_model.TARGET], xgb_model.data_test_features_predictions['predictions'])
