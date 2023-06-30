@@ -1,6 +1,32 @@
 import pickle
 import logging
 
+from tqdm import tqdm
+
+
+class Logger:
+    """
+    A custom logger class for logging messages with various log levels.
+
+    Attributes:
+        logger (logging.Logger): The logger object responsible for handling log messages.
+    """
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        # define the format of the log messages
+        log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        
+        # create a StreamHandler that outputs the messages to the console
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(log_format)
+        
+        # add the StreamHandler to the logger
+        self.logger.addHandler(console_handler)
+logger = Logger().logger # initialize logger
+
 
 def safe_as_pkl(obj, path:str):
     """Serial object.
@@ -39,27 +65,18 @@ def load_pkl(path):
         return objs
     else:
         return objs[0]
+    
 
-
-class Logger:
-    """
-    A custom logger class for logging messages with various log levels.
-
-    Attributes:
-        logger (logging.Logger): The logger object responsible for handling log messages.
-    """
-    def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        # define the format of the log messages
-        log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        
-        # create a StreamHandler that outputs the messages to the console
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(log_format)
-        
-        # add the StreamHandler to the logger
-        self.logger.addHandler(console_handler)
-logger = Logger().logger # initialize logger
+def tweet_topic_assignment(lda_model, topic_minimum_probability:float=0.4):
+    # iterate over each document in the corpus and assign it the most likely topic
+    topics = []
+    for doc in tqdm(lda_model.corpus, total=len(lda_model.corpus)):
+        doc_topics = lda_model.model.get_document_topics(doc, minimum_probability=topic_minimum_probability)
+        # check if a topic was found with sufficient probability (minimum_probability)
+        if doc_topics:
+            doc_topics = [int(_[0]) for _ in doc_topics] # transform to list of topics
+        else:
+            doc_topics = None
+        topics.append(doc_topics)
+    
+    return topics
