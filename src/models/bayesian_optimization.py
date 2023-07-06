@@ -2,7 +2,7 @@ import argparse
 import time
 
 import pandas as pd
-from hyperopt import fmin, tpe
+from hyperopt import fmin, tpe, space_eval
 from sklearn.metrics import mean_absolute_error
 
 from src.models import topic_modeling as tm
@@ -57,7 +57,7 @@ def optimize_topic_modeling(path_tweets_processed:pd.DataFrame, search_space:dic
     return result_df, optimized_parameters
 
 
-def optimize_xgb_modeling(xgb_model:tsf.XGBoostModel, search_space:dict, max_evals:int):
+def optimize_xgb_modeling(xgb_model:tsf.XGBoostModel2, search_space:dict, max_evals:int):
     """Performs hyperparameter optimization for xgb modeling.
 
     For this purpose, a bayesian optimization is performed.
@@ -70,16 +70,17 @@ def optimize_xgb_modeling(xgb_model:tsf.XGBoostModel, search_space:dict, max_eva
     Returns:
         optimized_parameters (dict): the optimized parameters    
     """
-    
+
     def _target_function(parameter_combination:dict):
         xgb_model.build(**parameter_combination)
-        mae = mean_absolute_error(xgb_model.data_test_features[xgb_model.TARGET], xgb_model.data_test_features_predictions['predictions'])
+        mae = xgb_model.evaluate()
         return mae
 
     logger.info(f'Start bayesian optimization algorithm for XGB-Model: {xgb_model.label}')
-    optimized_parameters = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals)
-    logger.info(f'Done. Optimized parameters: {str(optimized_parameters)}')
-    
+    optimized_indices  = fmin(fn=_target_function, space=search_space, algo=tpe.suggest, max_evals=max_evals)
+    optimized_parameters = space_eval(search_space, optimized_indices)
+
+    logger.info(f'Done. Optimized parameters: {str(optimized_parameters)}')    
     return optimized_parameters
 
 

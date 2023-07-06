@@ -1,79 +1,86 @@
-from dataclasses import dataclass
-
 import pandas as pd
 from src.utils import logger
 import xgboost as xgb
+from sklearn.metrics import mean_absolute_error
 
 
-@dataclass
-class TopicTimeSeriesData:
-    id: int
-    data: pd.DataFrame
-    label: str = None
+class XGBoostModel2:
 
+    def __init__(self, id:int, timeseries:pd.DataFrame) -> None:
+        self._id = id
+        self._timeseries = timeseries
 
-@dataclass
-class XGBoostModel:
-    id:int
-    label:str
-    data:pd.DataFrame
+        self.FEATURES = ['day', 'week', 'month', 'weekday']
+        self.TARGET = 'count'
+
+    @staticmethod
+    def train_test_split(data:pd.DataFrame, train_size:float):
+        split = int(train_size * len(data))
+        data_train, data_test = data[:split], data[split:]
+        return data_train, data_test
     
-    data_train:pd.DataFrame = None
-    data_test:pd.DataFrame = None
+    def create_features(self, data:pd.DataFrame):
+        data['day'] = data.index.day
+        data['week'] = data.index.isocalendar().week.astype(int)
+        data['month'] = data.index.month
+        data['weekday'] = data.index.weekday
+        return data
 
-    FEATURES:list = None
-    TARGET:str = None
-    
-    data_train_features:pd.DataFrame = None
-    data_test_features:pd.DataFrame = None
-
-    data_test_features_predictions:pd.DataFrame = None
-
-    model = None
-    mae_before_ht = None
-
-    def train_test_split(self, train_size:float):
-        """Splits the data into a training and test data set.
-
-        Based on train_size the dataset is split.
-
-        Args:
-            train_size (float): size of the training data set in percent
-
-        Returns:
-            data_train (pd.DataFrame): training data
-            data_test (pd.DataFrame): test data
-        """
-        split = int(train_size * len(self.data))
-        self.data_train, self.data_test = self.data[:split], self.data[split:]
-        return self.data_train, self.data_test
-    
     def build(self, **kwargs):
-        """Builds the XGB Model.
+        data_train_with_features = self.create_features(self._data_train.copy())
+        data_test_with_features = self.create_features(self._data_test.copy())
 
-        Uses XGRRegressor to compute the models.
+        X_train = data_train_with_features[self.FEATURES]
+        y_train = data_train_with_features[self.TARGET]
 
-        Args:
-            **kwargs: all common parameters and their values that can be passed
+        X_test = data_test_with_features[self.FEATURES]
+        y_test = data_test_with_features[self.TARGET]
 
-        Returns:
-            model (xgb.XGBRegressor): the computed model
-        """
-        X_train = self.data_train_features[self.FEATURES]
-        y_train = self.data_train_features[self.TARGET]
-        X_test = self.data_test_features[self.FEATURES]
-        y_test = self.data_test_features[self.TARGET]
-
-        # create and train the model
         reg = xgb.XGBRegressor(**kwargs)
         reg.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=False)
-        self.model = reg
-
-        # predict
-        self.data_test_features_predictions = self.data_test_features.assign(predictions=reg.predict(X_test))
-
-        return self.model
         
+        self._predictions = reg.predict(X_test)
+        return self._predictions
+
+    def evaluate(self):
+        return mean_absolute_error(self._data_test[self.TARGET], self._predictions)
+        
+    def __get_id(self):
+        return self._id
+    
+    def __get_timeseries(self):
+        return self._timeseries
+
+    def __get_label(self):
+        return self._label
+    
+    def __set_label(self, v:str):
+        self._label = v
+
+    def __get_data_train(self):
+        return self._data_train
+    
+    def __set_data_train(self, v:pd.DataFrame):
+        self._data_train = v
+
+    def __get_data_test(self):
+        return self._data_test
+    
+    def __set_data_test(self, v:pd.DataFrame):
+        self._data_test = v
+
+    def __get_predictions(self):
+        return self._predictions
+
+    id = property(__get_id)
+    timeseries = property(__get_timeseries)
+    label = property(__get_label, __set_label)
+
+    data_train = property(__get_data_train, __set_data_train)
+    data_test = property(__get_data_test, __set_data_test)
+
+    predictions = property(__get_predictions)
+
 
 def process_to_timeseries(df_topic_assigned:pd.DataFrame):
     """Creates time series from the data.
