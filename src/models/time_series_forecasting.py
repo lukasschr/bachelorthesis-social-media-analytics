@@ -5,7 +5,15 @@ from sklearn.metrics import mean_absolute_error
 
 
 class XGBoostModel2:
+    """Super class for XGBoostModel2 models.
 
+    This class contains functions for creating, managing and evaluating xgboost models.
+    Calculations and evaluations are made with xgboost.
+
+    Attributes:
+        id: identification number
+        timeseries: associated time series data
+    """
     def __init__(self, id:int, timeseries:pd.DataFrame) -> None:
         self._id = id
         self._timeseries = timeseries
@@ -15,11 +23,33 @@ class XGBoostModel2:
 
     @staticmethod
     def train_test_split(data:pd.DataFrame, train_size:float):
+        """Separates dataset into training and test data.
+
+        Splits pandas dataframe into training and test data by percentage passed.
+
+        Args:
+            data (pd.DataFrame): data to be split
+            train_size (float): indicates what percentage of the data is in the training data set
+
+        Returns:
+            data_train (pd.DataFrame): training data
+            data_test (pd.DataFrame): test data
+        """
         split = int(train_size * len(data))
         data_train, data_test = data[:split], data[split:]
         return data_train, data_test
     
     def create_features(self, data:pd.DataFrame):
+        """Creates features.
+
+        Creates specific features for xgb modeling.
+
+        Args:
+            data (pd.DataFrame): data for which the features are to be created.
+
+        Returns:
+            data (pd.DataFrame): updated data with features
+        """
         data['day'] = data.index.day
         data['week'] = data.index.isocalendar().week.astype(int)
         data['month'] = data.index.month
@@ -27,6 +57,16 @@ class XGBoostModel2:
         return data
 
     def build(self, **kwargs):
+        """Builds the xgboost model.
+
+        Calculates an xgboost model using xgboost.
+
+        Args:
+            **kwargs: all common parameters and their values that can be passed to the xgb.XGBRegressor function.
+
+        Returns:
+            self._predictions (list): list of predicted values based on the calculated model
+        """
         data_train_with_features = self.create_features(self._data_train.copy())
         data_test_with_features = self.create_features(self._data_test.copy())
 
@@ -43,6 +83,7 @@ class XGBoostModel2:
         return self._predictions
 
     def evaluate(self):
+        """Calculates MAE between predictions and test data."""
         return mean_absolute_error(self._data_test[self.TARGET], self._predictions)
         
     def __get_id(self):
