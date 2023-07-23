@@ -1,5 +1,4 @@
 .vscode
-archive
 data/raw
 data/intermediate
 data/processed
