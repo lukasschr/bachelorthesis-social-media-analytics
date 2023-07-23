@@ -68,7 +68,17 @@ def load_pkl(path):
     
 
 def tweet_topic_assignment(lda_model, topic_minimum_probability:float=0.4):
-    # iterate over each document in the corpus and assign it the most likely topic
+    """Assigns one or more topics to each tweet
+
+    Iterate over each document in the corpus and assign it the most likely topic.
+
+    Args:
+        lda_model (topic_modeling.LdaModel): lda modell
+        topic_minimum_probability (float): percentage match with a topic
+
+    Returns:
+        topics (list): List of assigned topics
+    """
     topics = []
     for doc in tqdm(lda_model.corpus, total=len(lda_model.corpus)):
         doc_topics = lda_model.model.get_document_topics(doc, minimum_probability=topic_minimum_probability)
