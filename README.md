@@ -1,6 +1,6 @@
 # **Bachelorthesis - Social Media Analytics**
 
-Dieses Projekt ist Teil meiner Bachelorthesis "Soziale Medien zur Identifizierung und Verlaufsprognostizierung von Markttrends: Eine Evaluation der Potentiale" am [Lehrstuhl für Wirtschaftsinformatik, insb. Social Computing](https://wiwi.uni-paderborn.de/dep3/trier).
+Dieses Projekt ist Teil der Bachelorthesis "Soziale Medien zur Identifizierung und Verlaufsprognostizierung von Markttrends: Eine Evaluation der Potentiale" am [Lehrstuhl für Wirtschaftsinformatik, insb. Social Computing](https://wiwi.uni-paderborn.de/dep3/trier).
 
 ---
 
@@ -23,9 +23,8 @@ docker load -i image.tar
 
 *Run Docker Image*
 ```bash
-docker run [-d] -p 8888:8888 bt_project
+docker run [-d] -p 8888:8888 btsma_project_lukas
 ```
-Wenn der optionale Parameter "-d" angegeben wird, wird der Docker-Container im Hintergrund gestartet und der Befehl kehrt sofort zur Eingabeaufforderung zurück, ohne dass die Container-Ausgabe angezeigt wird.
 
 *Open Jupyter Notebook*<br>
 <pre><a href="http://localhost:8888/">http://localhost:8888/</a></pre>
@@ -35,35 +34,34 @@ Wenn der optionale Parameter "-d" angegeben wird, wird der Docker-Container im H
 btsmalukasschroeder
 ```
 
+## **Wichtige Hinweise**
+Das Projekt umfasst einen Verzeichnisbaum `src/`,  der Skripte enthält, welche die erforderlichen Klassen und Funktionen für die Notebooks bereitstellen. In der Regel werden diese Skripte direkt in den Notebooks importiert und verwendet. In bestimmten Fällen kann es jedoch erforderlich sein, ein Skript manuell über ein Terminal zu starten oder auf einem serverbasierten System ohne Desktop-Umgebung auszuführen.
 
-### Hinweise
-Das Projekt verfügt über einen `src/` Ordner, welcher Skripte enthält die notwendige Klassen und Funktionen für die Notebooks bereitstellen. Zumeist werden diese direkt über die Notebooks importiert und verwendet. In Spezialfällen kann es notwendig sein, dass ein Skript manuell über ein Terminal gestartet werden muss oder auf einem Server ohne Desktop-Umgebung laufen muss.
-
-#### Skripte über ein Terminal ausführen
+### Skripte über ein Terminal ausführen
 Um Skripte über ein Terminal ausführen zu können, kann einfach ein Terminal innerhalb von Jupyter Notebook gestartet werden. 
-> Files > New > Terminal
+> File > New > Terminal
 
-#### Headless Anwendungen
-Headless Anwendungen sind Skripte, die auf einem Gerät ohne grafische Benutzeroberfläche ausgeführt werden können, bspw. einem Linux-Server. Da auf einem Gerät ohne Benutzeroberfläche Jupyter Notebook Terminals nicht gestartet werden können (um Skripte über Jupyter Notebook Terminals auszuführen), benötigt es folgende Lösung:<br>
+### Skripte über ein Terminal ausführen (HEADLESS)
+Wenn Skripte auf einem Gerät ohne grafische Benutzeroberfläche, wie beispielsweise einem Linux-Server, ausgeführt werden sollen, besteht das Problem, dass Jupyter Notebook-Terminals nicht gestartet werden können. Um Skripte dennoch auf solchen Geräten auszuführen, wird folgende Lösung empfohlen:<br>
 *Open Container Terminal*
 ```bash
 docker exec -it CONTAINER_ID bash
 ```
-Dies ermöglicht die Ausführung einer interaktiven Bash-Shell innerhalb des Docker-Containers. Über die Bash können nun Headless Scripte ausgeführt werden.
+Dies ermöglicht die Ausführung einer interaktiven Bash-Shell innerhalb des Docker-Containers. Über die Bash können nun Headless Skripte ausgeführt werden.
 
 
 
 ## **FAQ**
 
 #### **"Wie finde ich die CONTAINER_ID?"**
-Mit dem Befehl ```docker run [-d] -p 8888:8888 bt_project```, wird ein sogenannter Docker Container mit einer `CONTAINER_ID` erstellt. Diese lässt sich mit dem folgenden Befehl ermitteln:
+Mit dem Befehl ```docker run [-d] -p 8888:8888 btsma_project_lukas```, wird ein sogenannter Docker Container mit einer `CONTAINER_ID` erstellt. Diese lässt sich mit dem folgenden Befehl ermitteln:
 ```bash
 docker ps -a
 ```
 
 #### **"Wie beende ich den Container / Jupyter Notebook ordnungsgemäß?"**
 Es gibt zwei Möglichkeiten den Container zu beenden:
-1. Beenden über Button "Quit" in Jupyter
+1. > File > Shut Down
 2. <pre>docker stop CONTAINER_ID</pre>
 
 #### **"Der Container wurde beendet. Kann ich diesen erneut starten?"**
@@ -72,7 +70,7 @@ Ja! Zunächst muss die `CONTAINER_ID` ermittelt werden. Anschließend kann der C
 docker start CONTAINER_ID
 ```
 
-
+---
 
 ## **Contact**
 
