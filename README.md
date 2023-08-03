@@ -6,12 +6,10 @@ Dieses Projekt ist Teil der Bachelorthesis "Soziale Medien zur Identifizierung u
 
 ## **Leitfaden für den Einstieg**
 
-
 ### Voraussetzungen
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - Docker-Image (siehe: Digitaler Anhang)
-
 
 ### Installation und Ausführung
 Nach der Installation von Docker wird Docker-Desktop im Hintergrund gestartet. Anschließend werden die folgenden Befehle nacheinander in einer Eingabeaufforderung oder Shell ausgeführt.
@@ -36,6 +34,8 @@ Nach dem Öffnen von Jupyter Notebook wird ein Token verlangt. Der folgende Toke
 btsmalukasschroeder
 ```
 
+
+
 ## **Hinweise**
 Das Projekt umfasst einen Verzeichnisbaum `src/`,  der Skripte enthält, welche die erforderlichen Klassen und Funktionen für die Notebooks bereitstellen. In der Regel werden diese Skripte direkt in den Notebooks importiert und verwendet. In bestimmten Fällen kann es jedoch erforderlich sein, ein Skript manuell über ein Terminal zu starten oder auf einem serverbasierten System ohne Desktop-Umgebung auszuführen.
 
@@ -54,6 +54,15 @@ Dies ermöglicht die Ausführung einer interaktiven Bash-Shell innerhalb des Doc
 
 
 ## **FAQ**
+
+#### **"Ich habe Probleme Docker auf meinem System zu installieren oder auszuführen. Gibt es eine alternative Möglichkeit das Programm zu installieren und auszuführen?"**
+Ja! Dazu muss das Programm eigenständig aus dem zugehörigen GitHub-Repository gebaut werden. Das Repository `git_repo_btsma_project_lukas.zip` findet sich ebenfalls im Digitalen Anhang. Folgende Schritte gilt es nun auszuführen.
+1. Installation von [Python 3.11.3](https://www.python.org/downloads/release/python-3113/) inklusive pip. <br> *Hinweis*: Es ist notwendig die korrekte Version von Python zu installieren! (3.11.3)
+2. Installation von [pipenv](https://pipenv.pypa.io/en/latest/) über eine Eingabeaufforderung mittels pip: <pre>pip install pipenv</pre>
+3. Die ZIP-Datei `git_repo_btsma_project_lukas.zip` entpacken, um die darin enthaltenen Dateien auf dem lokalen System zu extrahieren
+4. Eine Eingabeaufforderung öffnen und zum Ordner navigieren, der die zuvor extrahierten Dateien enthält
+5. Installation des Programms: Um das Programm und seine Abhängigkeiten zu installieren müssen folgende Befehle nacheinander ausgeführt werden: <pre>pipenv install</pre> <pre>pipenv run python setup.py develop </pre>
+6. Starten des Programms: Um das Programm schließlich zu starten muss folgender Befehl ausgeführt werden: <pre>pipenv run jupyter notebook </pre>
 
 #### **"Wie finde ich die CONTAINER_ID?"**
 Mit dem Befehl ```docker run -d -p 8888:8888 btsma_project_lukas```, wird ein sogenannter Docker Container mit einer `CONTAINER_ID` erstellt. Diese lässt sich mit dem folgenden Befehl in einer Eingabeaufforderung oder Shell ermitteln:
