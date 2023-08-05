@@ -56,8 +56,8 @@ Dies ermöglicht die Ausführung einer interaktiven Bash-Shell innerhalb des Doc
 ## **FAQ**
 
 #### **"Ich habe Probleme Docker auf meinem System zu installieren oder auszuführen. Gibt es eine alternative Möglichkeit das Programm zu installieren und auszuführen?"**
-Ja! Dazu muss das Programm eigenständig aus dem zugehörigen GitHub-Repository gebaut werden. Das Repository `git_repo_btsma_project_lukas.zip` findet sich ebenfalls im Digitalen Anhang. Folgende Schritte gilt es nun auszuführen.
-1. Installation von [Python 3.11.3](https://www.python.org/downloads/release/python-3113/) inklusive pip. <br> *Hinweis*: Es ist notwendig die korrekte Version von Python zu installieren! (3.11.3)
+Ja! Dazu muss das Programm eigenständig aus dem zugehörigen GitHub-Repository gebaut werden. Das Repository `git_repo_btsma_project_lukas.zip` findet sich ebenfalls im Digitalen Anhang. Folgende Schritte gilt es auszuführen.
+1. Installation von [Python 3.11.3](https://www.python.org/downloads/release/python-3113/) inklusive pip. <br> *Hinweis*: Es ist notwendig die korrekte Version von Python zu installieren! `3.11.3`
 2. Installation von [pipenv](https://pipenv.pypa.io/en/latest/) über eine Eingabeaufforderung mittels pip: <pre>pip install pipenv</pre>
 3. Die ZIP-Datei `git_repo_btsma_project_lukas.zip` entpacken, um die darin enthaltenen Dateien auf dem lokalen System zu extrahieren
 4. Eine Eingabeaufforderung öffnen und zum Ordner navigieren, der die zuvor extrahierten Dateien enthält
