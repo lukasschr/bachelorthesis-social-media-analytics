@@ -20,6 +20,9 @@ from tqdm import tqdm
 
 
 # - Exception classes
+class TwitterAPIEndpointError(Exception):
+    """Code no longer works because Twitter blocks the API endpoints used for scraping (05.08.2023)"""
+
 class NextPageNotFound(Exception):
     """Raises when no other page with tweets can be found for the current search parameters"""
 
@@ -221,6 +224,7 @@ def scrape(q:str, since:datetime.datetime, until:datetime.datetime, limit:int, i
 
 
 if __name__ == '__main__':
+    raise TwitterAPIEndpointError
     # setup logging
     logging.basicConfig(
         format='%(levelname)s   %(message)s',

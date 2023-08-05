@@ -11,6 +11,11 @@ import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
 
+# - Exception classes
+class TwitterAPIEndpointError(Exception):
+    """Code no longer works because Twitter blocks the API endpoints used for scraping (05.08.2023)"""
+
+
 @dataclass
 class Tweet:
     url:str
@@ -134,6 +139,7 @@ def _update_recovery(querystring, since, until, limit):
 
 
 if __name__ == '__main__':
+    raise TwitterAPIEndpointError
     logger = Logger().logger # initialize logger
 
     parser = argparse.ArgumentParser(description='', epilog='Made with <3 by Lukas Schroeder')
